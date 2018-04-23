@@ -1,0 +1,128 @@
+<html>
+<head>
+  <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+  <script type="text/javascript">
+    google.charts.load('current', {'packages':['gantt'], 'language': 'de'});
+    google.charts.setOnLoadCallback(load);
+
+    function daysToMilliseconds(days) {
+      return days * 24 * 60 * 60 * 1000;
+    }
+
+	function load() {
+	drawChart();
+	drawChart2();
+	}
+	
+    function drawChart() {
+
+      var data = new google.visualization.DataTable();
+      data.addColumn('string', 'ID');
+	  data.addColumn('string', 'Task');
+      data.addColumn('date', 'Start');
+      data.addColumn('date', 'End');
+      data.addColumn('number', 'Duration');
+	  data.addColumn('number', 'Percent');
+      data.addColumn('string', 'Comment');
+
+      data.addRows([
+		['1', 'Planning',
+		new Date(2018, 03, 10), new Date(2018, 04, 10),  daysToMilliseconds(30), 0, ''],
+		['0', 'System Setup & Concept',
+		new Date(2018, 03, 20), new Date(2018, 04, 10),  daysToMilliseconds(20), 0, ''],
+		['3', 'Implementation',
+		new Date(2018, 04, 11), new Date(2018, 05, 15),  daysToMilliseconds(40), 0, ''],
+		['4', 'Literature writing',
+		new Date(2018, 04, 11), new Date(2018, 05, 25),  daysToMilliseconds(40), 0, ''],
+        ['5', 'Evaluation',
+		new Date(2018, 05, 16), new Date(2018, 06, 03),  daysToMilliseconds(40), 0, ''],
+		['6', '',
+        new Date(2018, 06, 08), new Date(2018, 06, 08),  daysToMilliseconds(1), 0, '']
+      ]);
+
+      var options = {
+        height: 275
+      };
+
+      var chart = new google.visualization.Gantt(document.getElementById('chart_div'));
+
+      chart.draw(data, options);
+    }
+	
+	function drawChart2() {
+
+      var data = new google.visualization.DataTable();
+      data.addColumn('string', 'ID');
+	  data.addColumn('string', 'Task');
+      data.addColumn('date', 'Start');
+      data.addColumn('date', 'End');
+      data.addColumn('number', 'Duration');
+	  data.addColumn('number', 'Percent');
+      data.addColumn('string', 'Comment');
+
+      data.addRows([
+		 ['1', '',
+		 new Date(2018, 03, 10), new Date(2018, 03, 10),  daysToMilliseconds(30), 0, ''],
+		 ['2', 'Milestone 1',
+         new Date(2018, 03, 23), new Date(2018, 03, 24),  daysToMilliseconds(1), 0, ''],
+		 ['4', 'Milestone 2',
+         new Date(2018, 04, 15), new Date(2018, 04, 16),  daysToMilliseconds(1), 0, ''],
+		 ['5', 'Milestone 3',
+         new Date(2018, 05, 12), new Date(2018, 05, 13),  daysToMilliseconds(1), 0, ''],
+		 ['6', 'Milestone 4',
+         new Date(2018, 06, 03), new Date(2018, 06, 04),  daysToMilliseconds(1), 0, ''],
+		 ['7', '',
+         new Date(2018, 06, 08), new Date(2018, 06, 08),  daysToMilliseconds(1), 0, '']
+      ]);
+
+      var options = {
+        height: 275
+      };
+
+      var chart = new google.visualization.Gantt(document.getElementById('chart_div2'));
+
+      chart.draw(data, options);
+    }
+  </script>
+  <style>
+  	th {
+	    text-align: left;
+	}
+	table, th, td {
+	    border: 1px solid black;
+	    border-collapse: collapse;
+	}
+	th, td {
+	    padding: 5px;
+	}
+
+	body > div {
+		align-self: center;
+	}
+
+	body {
+
+		font-family: Arial, "Helvetica Neue", Helvetica, sans-serif;
+		height: fit-content;
+		display: grid;
+		grid-template-rows: auto auto;
+		grid-template-columns: 1fr 1fr;
+		grid-template-areas: 
+		"graph graph"
+		"table1 table1";
+		/*justify-items: center;*/
+
+	}
+
+	.normalDiv {
+		margin: auto;
+	}
+
+  </style>
+</head>
+<body>
+  <div style="grid-area: graph; margin-bottom: 20px" id="chart_div"></div>
+  <div style="grid-area: table1" id="chart_div2"></div>
+
+</body>
+</html>
