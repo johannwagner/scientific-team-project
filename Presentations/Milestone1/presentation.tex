@@ -10,9 +10,12 @@
 \usepackage[utf8]{inputenc}
 
 \title{Scientific Team Project}
-\author{Johann Wagner, Johannes Wünsche, Marten Wallewein-Eising}
+\subtitle{Thread Pool in GeckoDB/BOLSTER}
+\author{Johann Wagner, Johannes Wünsche, Marten Wallewein-Eising, Robert Jenderise, Benedikt Zeilinger}
 \date{\today}
 \institute{Otto von Guericke University, Magdeburg}
+
+%Topic, schedule, and team presentation & first results of literature research
 
 \begin{document}
 
@@ -23,11 +26,35 @@
 
 
 \section[Agenda]{}
-\begin{frame}
-\frametitle{Agenda}
-\tableofcontents
-\end{frame}
+	\begin{frame}
+	\frametitle{Agenda}
+	\tableofcontents
+	\end{frame}
 
+\section{Introduction}
+	\begin{frame}
+		\frametitle{Introduction}
+		\begin{itemize}
+			\item \emph{In computer programming, a thread pool is a software design pattern for achieving concurrency of execution in a computer program.}
+			\item Pool of Threads
+			\item Reduces overhead of creating new threads by reusing existing threads.
+		\end{itemize}
+	\end{frame}
+	\begin{frame}
+		\frametitle{Current Situation}
+		\begin{itemize}
+			\item Operations are spawning dozens of threads, which are not handled and managed..
+			\item After some operations profilers dies.
+		\end{itemize}
+	\end{frame}
+	
+	\begin{frame}
+		\frametitle{Desirable Situation}
+		\begin{itemize}
+			\item Reuse of Threads with thread pools.
+			\item Limited amount of threads, which are handled correctly.
+		\end{itemize}
+	\end{frame}
 
 \begin{frame}
  \frametitle{Thank you for your attention!}
