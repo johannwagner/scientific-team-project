@@ -23,12 +23,18 @@
  \titlepage
 \end{frame}
 
-
-
 \section[Agenda]{}
 	\begin{frame}
 	\frametitle{Agenda}
 	\tableofcontents
+	\end{frame}
+
+\section{Motivation}
+	\begin{frame}
+		\frametitle{Motivation}
+		\begin{center}
+			\includegraphics[width=0.6\textwidth]{img/bigpicture.png}
+		\end{center}
 	\end{frame}
 
 \section{Introduction}
@@ -36,7 +42,7 @@
 		\frametitle{Introduction}
 		\begin{itemize}
 			\item \emph{In computer programming, a thread pool is a software design pattern for achieving concurrency of execution in a computer program.}
-			\item Pool of Threads
+			\item Pool of Threads to distribute parallel tasks
 			\item Reduces overhead of creating new threads by reusing existing threads.
 		\end{itemize}
 	\end{frame}
@@ -44,7 +50,7 @@
 		\frametitle{Current Situation}
 		\begin{itemize}
 			\item Operations are spawning dozens of threads, which are not handled and managed..
-			\item After some operations profilers dies.
+			\item After some operations profiler dies (too many threads).
 		\end{itemize}
 	\end{frame}
 
