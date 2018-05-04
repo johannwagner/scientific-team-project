@@ -5,7 +5,10 @@
 #define noop (void)0
 #endif //noop
 
+#include <stdatomic.h>
+
 #include "status.h"
+#include "priority_queue.h"
 
 //
 //	GLOBAL VARIABLES
@@ -18,24 +21,25 @@ atomic_uint counter_tasks = 0;
 //	STRUCTS
 //
 
-struct thread_task {
+typedef struct thread_task {
 	void* arg;
 	pthread_attr_t *attr;
 	void *(*routine);
-};
+} thread_task;
 
-struct thread_pool {
+typedef struct thread_pool {
 	pthread_t* pool;
-	queue* waiting_tasks;
+	priority_queue_t* waiting_tasks;
 	size_t size;
-};
 
-struct __enqueued_task {
+} thread_pool;
+
+typedef struct __enqueued_task {
 	struct thread_task* thread;
 	size_t priority;
 	size_t id;
 	size_t is_activated;
-};
+} __enqueued_task;
 
 //
 //	EXTERNAL METHODS

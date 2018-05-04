@@ -1,5 +1,5 @@
 #include "../include/thread_pool.h"
-#include "../include/status.h"
+
 //
 //  EXTERNAL METHODS
 //
@@ -9,7 +9,7 @@ thread_pool* thread_pool_create(size_t num_threads) {
    creation_pool->size = num_threads;
    //create empty threads which themselves catch their own tasks from the created queue
    for(size_t i = 0; i < num_threads; i++) {
-     creation_pool->pool = pthread_create(counter_threads++ ,null ,(__thread_main)* ,null );
+     creation_pool->pool[i] = pthread_create(counter_threads++ ,null ,(__thread_main)* ,null );
    }
 }
 
@@ -45,7 +45,7 @@ void __thread_main(void *(*routine) (void *), thread_pool *pool) {
 	void* args;
 	pthread_attr_t* attr;
 	while(true){
-		if(has_task = 1) {
+		if(has_task == 1) {
 			routine(args, attr);
 			has_task = 0;
 		}
@@ -59,7 +59,7 @@ void __thread_main(void *(*routine) (void *), thread_pool *pool) {
 	}
 }
 
-status_e __check_queue(queue* waiting_tasks, size_t size, size_t task_id) {
+status_e __check_queue(priority_queue_t* waiting_tasks, size_t size, size_t task_id) {
   for(size_t i=0; i < size; i++) {
     if (waiting_task->content[i]->id == task_id) {
       //returns failed in case queue still contains specified task id
@@ -70,6 +70,6 @@ status_e __check_queue(queue* waiting_tasks, size_t size, size_t task_id) {
   return status_ok;
 }
 
-status_e __remove_from_queue(queue* waiting_tasks, size_t task_id) {
+status_e __remove_from_queue(priority_queue_t* waiting_tasks, size_t task_id) {
   //OK here i need some more inview of the working of the queue and what methods will in the end exist
 }
