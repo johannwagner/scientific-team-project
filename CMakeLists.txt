@@ -13,8 +13,8 @@ include_directories("include")
 
 find_package (Threads)
 
-set(SOURCE_FILES
-        src/*.c)
+# find all source and header files
+file(GLOB_RECURSE SOURCE_FILES "include/*.h" "src/*.c")
 
 add_executable(gecko_thread_pool ${SOURCE_FILES})
 
