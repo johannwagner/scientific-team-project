@@ -51,21 +51,20 @@ status_e gecko_pool_wait_for_id(size_t id, thread_pool* pool) {
 //  INTERNAL METHODS
 //
 
-void __thread_main(void *(*routine) (void *, void *), thread_pool *pool) {
-	_Bool has_task = 0;
-	void* args;
+void *__thread_main(void* args) {
 	pthread_attr_t* attr;
-	while(1){
-		if(has_task == 1) {
-			routine(args, attr);
-			has_task = 0;
+  ((__thread_information)args)->is_active = 0;
+  while(1){
+		if(((__thread_information)args)->is_active == 1) {
+            ((__thread_information)args)->routine(((__thread_information)args)->args);
+			((__thread_information)args)->is_active = 0;
 		}
 		else {
-			__enqueued_task* next_task = __get_next_task(pool);
-			routine = next_task->thread->routine;
-			args = next_task->thread->args;
-			attr = next_task->thread->attr;
-			has_task = 1;
+			__enqueued_task* next_task = __check__for_ready_queue(pool);
+			((__thread_information)args)->routine = next_task->thread->routine;
+            ((__thread_information)args)->args = next_task->thread->args;
+            ((__thread_information)args)->attr = next_task->thread->attr;
+      ((__thread_information)args)->is_active = 1;
 		}
 	}
 }
