@@ -25,7 +25,7 @@ static pthread_t counter_tasks = 0;
 typedef struct thread_task {
 	void* args;
 	pthread_attr_t *attr;
-	void *(*routine) (void *, void *);
+	void *(*routine);
 } thread_task;
 
 typedef struct thread_pool {
@@ -42,6 +42,12 @@ typedef struct __enqueued_task {
 	size_t is_activated;
 } __enqueued_task;
 
+typedef struct __thread_information {
+	void* args;
+	void *(* routine);
+	_Bool is_active;
+} __thread_information;
+
 //
 //	EXTERNAL METHODS
 //
@@ -56,11 +62,12 @@ status_e gecko_pool_wait_for_id(size_t id, thread_pool* pool);
 //	INTERNAL METHODS
 //
 
-void __thread_main(void *(*routine) (void *, void *), thread_pool *pool);
+void *__thread_main(void *args);
 status_e __task_finished(__enqueued_task* task);
 void __thread_idle();
 status_e __check_for_group_queue(priority_queue_t* waiting_tasks, size_t size, size_t task_id);
 //status_e __remove_from_queue(priority_queue_t* waiting_tasks, size_t task_id);
 
 __enqueued_task* __get_next_task(thread_pool *pool);
+
 #endif //THREAD_POOL_H
