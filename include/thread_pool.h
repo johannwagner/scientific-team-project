@@ -22,7 +22,7 @@ atomic_uint counter_tasks = 0;
 //
 
 typedef struct thread_task {
-	void* arg;
+	void* args;
 	pthread_attr_t *attr;
 	void *(*routine);
 } thread_task;
@@ -55,9 +55,10 @@ status_e gecko_pool_wait_for_id(size_t id, thread_pool* pool);
 //	INTERNAL METHODS
 //
 
-void __thread_main(void *(*routine) (void *), thread_pool *pool);
+void __thread_main(void *(*routine) (void *, void *), thread_pool *pool);
 status_e __task_finished(__enqueued_task* task);
 void __thread_idle();
-
+status_e __check_queue(priority_queue_t* waiting_tasks, size_t size, size_t task_id);
+status_e __remove_from_queue(priority_queue_t* waiting_tasks, size_t task_id);
 
 #endif //THREAD_POOL_H
