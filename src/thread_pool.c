@@ -10,14 +10,14 @@ thread_pool* thread_pool_create(size_t num_threads) {
    creation_pool->size = num_threads;
    //create empty threads which themselves catch their own tasks from the created queue
    for(size_t i = 0; i < num_threads; i++) {
-     creation_pool->pool[i] = pthread_create(counter_threads++ ,NULL ,(__thread_main)*, NULL);
+     creation_pool->pool[i] = pthread_create(counter_threads++ ,NULL ,*(__thread_main), NULL);
    }
 }
 
 status_e gecko_pool_enqueue_tasks(thread_task* tasks, thread_pool* pool, size_t num_threads) {
   for(size_t i= 0; i < num_threads; i++) {
     //Assuming queue will conatin something like this, this will not fail
-    push(pool->waiting_tasks, thread_task[i]);
+    priority_queue_push(pool->waiting_tasks, &tasks[i], 1);  //TODO: set prio
   }
   return status_ok;
 }
@@ -31,7 +31,7 @@ size_t gecko_pool_create_group_id() {
 }
 
 status_e gecko_pool_wait_for_id(size_t id, thread_pool* pool) {
-  while(__check_queue(pool->waiting_tasks) == status_failed){
+  while(__check_queue(pool->waiting_tasks,0, id) == status_failed){ //TODO: set size
     //adjust this to not constantly check array for task_id contains instead check only when changes occur
   }
   return status_ok;
@@ -62,7 +62,7 @@ void __thread_main(void *(*routine) (void *, void *), thread_pool *pool) {
 
 status_e __check_queue(priority_queue_t* waiting_tasks, size_t size, size_t task_id) {
   for(size_t i=0; i < size; i++) {
-    if (waiting_tasks->content[i]->id == task_id) {
+    if (waiting_tasks[i].data->element == task_id) { //TODO: id?
       //returns failed in case queue still contains specified task id
       return status_failed;
     }
