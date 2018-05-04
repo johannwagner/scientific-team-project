@@ -20,6 +20,8 @@ thread_pool* thread_pool_create(size_t num_threads) {
      }
      counter_threads++;
    }
+
+   return creation_pool;
 }
 
 status_e gecko_pool_enqueue_tasks(thread_task* tasks, thread_pool* pool, size_t num_threads) {
@@ -39,7 +41,7 @@ size_t gecko_pool_create_group_id() {
 }
 
 status_e gecko_pool_wait_for_id(size_t id, thread_pool* pool) {
-  while(__check_queue(pool->waiting_tasks,0, id) == status_failed){ //TODO: set size
+  while(__check_for_group_queue(pool->waiting_tasks,0, id) == status_failed){ //TODO: set size
     //adjust this to not constantly check array for task_id contains instead check only when changes occur
   }
   return status_ok;
@@ -59,7 +61,7 @@ void __thread_main(void *(*routine) (void *, void *), thread_pool *pool) {
 			has_task = 0;
 		}
 		else {
-			__enqueued_task* next_task = __check__for_ready_queue(pool);
+			__enqueued_task* next_task = __get_next_task(pool);
 			routine = next_task->thread->routine;
 			args = next_task->thread->args;
 			attr = next_task->thread->attr;
@@ -70,7 +72,7 @@ void __thread_main(void *(*routine) (void *, void *), thread_pool *pool) {
 
 status_e __check_for_group_queue(priority_queue_t* waiting_tasks, size_t size, size_t task_id) {
   for(size_t i=0; i < size; i++) {
-    if (waiting_tasks[i].data->element == task_id) { //TODO: id?
+    if (((__enqueued_task*)waiting_tasks[i].data->element)->id == task_id) { //TODO: id?
       //returns failed in case queue still contains specified task id
       return status_failed;
     }
@@ -79,6 +81,14 @@ status_e __check_for_group_queue(priority_queue_t* waiting_tasks, size_t size, s
   return status_ok;
 }
 
-status_e __remove_from_queue(priority_queue_t* waiting_tasks, size_t task_id) {
+//status_e __remove_from_queue(priority_queue_t* waiting_tasks, size_t task_id) {
   //OK here i need some more inview of the working of the queue and what methods will in the end exist
+//  return status_ok;
+//}
+
+__enqueued_task* __get_next_task(thread_pool *pool) {
+  if(!priority_queue_is_empty(pool->waiting_tasks))
+    return (__enqueued_task*) priority_queue_pop(pool->waiting_tasks);
+  else
+    return NULL;
 }
