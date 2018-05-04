@@ -11,7 +11,7 @@ thread_pool* thread_pool_create(size_t num_threads) {
    creation_pool->size = num_threads;
    //create empty threads which themselves catch their own tasks from the created queue
    for(size_t i = 0; i < num_threads; i++) {
-     int ret = pthread_create(&(counter_threads),NULL , &__thread_main, NULL);
+     int ret = pthread_create(&(counter_threads),NULL , &__thread_main, creation_pool);
      if ( ret == 0) {
        creation_pool->pool[i] = counter_threads;
      }
@@ -52,19 +52,22 @@ status_e gecko_pool_wait_for_id(size_t id, thread_pool* pool) {
 //
 
 void *__thread_main(void* args) {
-	pthread_attr_t* attr;
-  ((__thread_information)args)->is_active = 0;
+  //pthread_attr_t* attr;
+  __thread_information thread_info;
+  thread_info.is_active = 0;
+  thread_pool* pool = ((thread_pool*)args);
+
   while(1){
-		if(((__thread_information)args)->is_active == 1) {
-            ((__thread_information)args)->routine(((__thread_information)args)->args);
-			((__thread_information)args)->is_active = 0;
+		if(thread_info.is_active == 1) {
+            (*thread_info.routine)(thread_info.args);
+			thread_info.is_active = 0;
 		}
 		else {
-			__enqueued_task* next_task = __check__for_ready_queue(pool);
-			((__thread_information)args)->routine = next_task->thread->routine;
-            ((__thread_information)args)->args = next_task->thread->args;
-            ((__thread_information)args)->attr = next_task->thread->attr;
-      ((__thread_information)args)->is_active = 1;
+			__enqueued_task* next_task = __get_next_task(pool);
+			thread_info.routine = next_task->thread->routine;
+      thread_info.args = next_task->thread->args;
+      //attr = next_task->thread->attr;
+      thread_info.is_active = 1;
 		}
 	}
 }
