@@ -5,7 +5,7 @@ set(CMAKE_C_STANDARD 11)
 
 set(CMAKE_BUILD_TYPE Debug)
 
-set(CMAKE_C_FLAGS "-O3 -Wall -Wextra -Werror")
+set(CMAKE_C_FLAGS "-O3 -Wall -Wextra")
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
