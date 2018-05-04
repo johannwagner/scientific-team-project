@@ -6,8 +6,10 @@ int main()
 	priority_queue_t queue;
 	priority_queue_init(&queue);
 
-	for(size_t i = 0; i < 10; ++i)
-		priority_queue_push(&queue, (void*)i, i);
+	for(size_t i = 0; i < 256; ++i)
+	{
+		priority_queue_push(&queue, (void*)(255-i), 255-i);	
+	}
 
 	while(!priority_queue_is_empty(&queue))
 	{

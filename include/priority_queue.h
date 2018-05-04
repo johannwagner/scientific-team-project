@@ -23,4 +23,4 @@ void* priority_queue_pop(priority_queue_t* queue);
 int priority_queue_is_empty(priority_queue_t* queue);
 
 
-#endif //THREAD_POOL_H
+#endif //GECKO_PRIORITY_QUEUE_H
