@@ -24,7 +24,7 @@
     sudo make
 
     sudo cp *.a /usr/local/lib/
-    sudo cp ../gtest /user/local/include/gtest -r
+    sudo cp ../gtest /usr/local/include/gtest -r
     
     #To compile simply direct to the cloned directory and
     cmake .
