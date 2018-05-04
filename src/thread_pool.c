@@ -10,7 +10,14 @@ thread_pool* thread_pool_create(size_t num_threads) {
    creation_pool->size = num_threads;
    //create empty threads which themselves catch their own tasks from the created queue
    for(size_t i = 0; i < num_threads; i++) {
-     creation_pool->pool[i] = pthread_create(counter_threads++ ,NULL ,*(__thread_main), NULL);
+     int ret = pthread_create(&(counter_threads),NULL , &__thread_main, NULL);
+     if ( ret == 0) {
+       creation_pool->pool[i] = counter_threads;
+     }
+     else {
+       --i;
+     }
+     counter_threads++;
    }
 }
 
@@ -51,7 +58,7 @@ void __thread_main(void *(*routine) (void *, void *), thread_pool *pool) {
 			has_task = 0;
 		}
 		else {
-			__enqueued_task* next_task = check_queue(pool);
+			__enqueued_task* next_task = __check__for_ready_queue(pool);
 			routine = next_task->thread->routine;
 			args = next_task->thread->args;
 			attr = next_task->thread->attr;
@@ -60,7 +67,7 @@ void __thread_main(void *(*routine) (void *, void *), thread_pool *pool) {
 	}
 }
 
-status_e __check_queue(priority_queue_t* waiting_tasks, size_t size, size_t task_id) {
+status_e __check_for_group_queue(priority_queue_t* waiting_tasks, size_t size, size_t task_id) {
   for(size_t i=0; i < size; i++) {
     if (waiting_tasks[i].data->element == task_id) { //TODO: id?
       //returns failed in case queue still contains specified task id
