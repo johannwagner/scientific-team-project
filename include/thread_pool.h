@@ -5,7 +5,6 @@
 #define noop (void)0
 #endif //noop
 
-#include <stdatomic.h>
 #include <stdlib.h>
 #include <pthread.h>
 
@@ -16,8 +15,8 @@
 //	GLOBAL VARIABLES
 //
 
-pthread_t counter_threads = 0;
-pthread_t counter_tasks = 0;
+static pthread_t counter_threads = 0;
+static pthread_t counter_tasks = 0;
 
 //
 //	STRUCTS
