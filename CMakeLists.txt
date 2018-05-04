@@ -18,6 +18,8 @@ find_package (Threads)
 file(GLOB_RECURSE SOURCE_FILES "include/*.h" "src/*.c")
 list(REMOVE_ITEM SOURCE_FILES ${CMAKE_CURRENT_SOURCE_DIR}/src/main.c)
 
+file(GLOB_RECURSE TEST_FILES "testing/*.hpp")
+
 add_executable(gecko_thread_pool 
         ${SOURCE_FILES}
         src/main.c)
@@ -30,9 +32,9 @@ if (UNIX)
         include_directories("/usr/local/include")
 
         add_executable(gecko_thread_pool_tests
-                testing/test_runner.cpp
                 ${SOURCE_FILES}
                 ${TEST_FILES}
+                testing/test_runner.cpp
         )
 
         add_custom_target(tests
