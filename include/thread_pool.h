@@ -1,38 +1,59 @@
 #ifndef THREAD_POOL_H
 #define THREAD_POOL_H
 
+#ifndef noop
+#define noop (void)0
+#endif //noop
+
 #include "status.h"
+
+//
+//	GLOBAL VARIABLES
+//
+
+atomic_uint counter_threads = 0;
+atomic_uint counter_tasks = 0;
+
+//
+//	STRUCTS
+//
+
+struct thread_task {
+	void* arg;
+	pthread_attr_t *attr;
+	void *(*routine);
+};
 
 struct thread_pool {
 	pthread_t* pool;
+	queue* waiting_tasks;
 	size_t size;
 };
 
 struct __enqueued_task {
-	thread_task* thread;
+	struct thread_task* thread;
 	size_t priority;
-	pthread_t id;
+	size_t id;
 	size_t is_activated;
 };
 
-thread_pool* thread_pool_create(size_t num_threads) {
-	struct thread_pool creation_pool;
-	creation_pool->size = num_threads;
-	//here for some thread creation
-	
-}	
+//
+//	EXTERNAL METHODS
+//
 
-void __thread_main(void* args, pthread_attr_t* attr, void *(*routine), size_t* is_activated) {
-	while(true){
-		if(*is_activated) {
-			routine(args, attr);
-		}
-		else {
-			//noop for now should change this in the future to
-			//more efficient sleep or something
-		}
-	}
-}
+thread_pool* thread_pool_create(size_t num_threads);
+status_e gecko_pool_enqueue_tasks(thread_task* task, thread_pool* pool, size_t num_threads);
+status_e gecko_pool_enqueue_task(thread_task* task, thread_pool* pool);
+size_t gecko_pool_create_group_id();
+status_e gecko_pool_wait_for_id(size_t id, thread_pool* pool);
+
+//
+//	INTERNAL METHODS
+//
+
+void __thread_main(void *(*routine) (void *), thread_pool *pool);
+status_e __task_finished(__enqueued_task* task);
+void __thread_idle();
+
 
 #endif //THREAD_POOL_H
-
