@@ -28,7 +28,7 @@ thread_pool* thread_pool_create(size_t num_threads) {
    }
 
    pool->pool = threads;
-   memset(pool->thread_status, 1, sizeof(size_t) * num_threads);
+   memset(pool->thread_status, thread_status_idle, sizeof(size_t) * num_threads);
    return pool;
 }
 
@@ -123,10 +123,10 @@ __enqueued_task* __get_next_task(thread_pool *pool) {
 
 thread_status_e __update_thread_status(thread_pool* pool, size_t thread_id, thread_status_e thread_status) {
   // Check if free is called on the thread pool and tell the thread to finish
-  if(pool->states[thread_id] == thread_status_will_terminate)
+  if(pool->thread_status[thread_id] == thread_status_will_terminate)
     return thread_status_will_terminate;
 
   // Otherwise update thread status in pool
-  pool->states[thread_id] = thread_status;
+  pool->thread_status[thread_id] = thread_status;
   return thread_status_empty;
 }
