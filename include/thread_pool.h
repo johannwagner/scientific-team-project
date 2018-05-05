@@ -29,6 +29,8 @@ typedef struct thread_task {
 	void* args;
 	pthread_attr_t *attr;
 	task_routine routine;
+	size_t group_id;
+	size_t priority;
 } thread_task;
 
 typedef struct thread_pool {
@@ -46,11 +48,8 @@ typedef struct __enqueued_task {
 } __enqueued_task;
 
 typedef struct __thread_information {
-	void* args;
-	task_routine routine;
 	thread_pool* pool;
 	size_t id;
-	size_t is_active;
 } __thread_information;
 
 //

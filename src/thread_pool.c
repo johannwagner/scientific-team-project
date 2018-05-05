@@ -50,10 +50,13 @@ void thread_pool_free(thread_pool* pool) {
     free(pool);
 }
 
-status_e gecko_pool_enqueue_tasks(thread_task* tasks, thread_pool* pool, size_t num_threads) {
-  for(size_t i= 0; i < num_threads; i++) {
+status_e gecko_pool_enqueue_tasks(thread_task* tasks, thread_pool* pool, size_t num_tasks) {
+  size_t group_id = gecko_pool_create_group_id();
+  
+  for(size_t i= 0; i < num_tasks; i++) {
     //Assuming queue will conatin something like this, this will not fail
-    priority_queue_push(pool->waiting_tasks, &tasks[i], 1);  //TODO: set prio
+    tasks[i].group_id = group_id;
+    priority_queue_push(pool->waiting_tasks, &tasks[i], tasks[i].priority); 
   }
   return status_ok;
 }
@@ -80,6 +83,7 @@ status_e gecko_pool_wait_for_id(size_t id, thread_pool* pool) {
 void *__thread_main(void* args) {
   __thread_information* thread_info = (__thread_information*)args;
 
+
   while(1){
 
     __enqueued_task* next_task = __get_next_task(thread_info->pool);
@@ -89,11 +93,8 @@ void *__thread_main(void* args) {
       if(thread_status_will_terminate == __update_thread_status(thread_info->pool, thread_info->id, thread_status_working))
         break;
 
-      thread_info->routine = next_task->thread->routine;
-      thread_info->args = next_task->thread->args;
-
       // Execute task
-      (*thread_info->routine)(thread_info->args);
+      (*next_task->thread->routine)(next_task->thread->args);
     }
 
     // Check if this thread has to terminate
