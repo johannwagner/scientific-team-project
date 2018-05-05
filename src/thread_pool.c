@@ -6,22 +6,33 @@
 //
 
 thread_pool* thread_pool_create(size_t num_threads) {
-   thread_pool* creation_pool = (thread_pool*)malloc(sizeof(thread_pool));
+   thread_pool* pool = (thread_pool*)malloc(sizeof(thread_pool));
+   pool->size = num_threads;
+   
+   pthread_t* threads = (pthread_t*)malloc(sizeof(pthread_t) * (num_threads + 1));
 
-   creation_pool->size = num_threads;
    //create empty threads which themselves catch their own tasks from the created queue
    for(size_t i = 0; i < num_threads; i++) {
-     int ret = pthread_create(&(counter_threads),NULL , &__thread_main, creation_pool);
-     if ( ret == 0) {
+     pthread_create(&threads[i],NULL , &__thread_main, pool);
+     
+     /*if ( ret == 0) {
        creation_pool->pool[i] = counter_threads;
      }
      else {
        --i;
      }
-     counter_threads++;
+     counter_threads++; */
    }
 
-   return creation_pool;
+   pool->pool = threads;
+
+   return pool;
+}
+
+void thread_pool_free(thread_pool* pool) {
+    //TODO: Check active threads
+    free(pool->pool);
+    free(pool);
 }
 
 status_e gecko_pool_enqueue_tasks(thread_task* tasks, thread_pool* pool, size_t num_threads) {
@@ -53,7 +64,7 @@ status_e gecko_pool_wait_for_id(size_t id, thread_pool* pool) {
 
 void *__thread_main(void* args) {
   //pthread_attr_t* attr;
-  __thread_information thread_info;
+  /*__thread_information thread_info;
   thread_info.is_active = 0;
   thread_pool* pool = ((thread_pool*)args);
 
@@ -69,7 +80,8 @@ void *__thread_main(void* args) {
       //attr = next_task->thread->attr;
       thread_info.is_active = 1;
 		}
-	}
+	}*/
+
 }
 
 status_e __check_for_group_queue(priority_queue_t* waiting_tasks, size_t size, size_t task_id) {

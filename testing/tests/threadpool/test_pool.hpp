@@ -8,7 +8,7 @@ extern "C"
 // Test the creatrion of thread pools
 TEST(ThreadPool, Create) {
 
-    thread_pool* pool = thread_pool_create(16);
+    thread_pool* pool = thread_pool_create(4);
     EXPECT_TRUE(pool);
 }
 

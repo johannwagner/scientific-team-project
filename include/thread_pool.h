@@ -15,7 +15,7 @@
 //	GLOBAL VARIABLES
 //
 
-static pthread_t counter_threads = 0;
+//static pthread_t counter_threads = 0;
 static pthread_t counter_tasks = 0;
 
 //
@@ -56,6 +56,8 @@ typedef struct __thread_information {
 //
 
 thread_pool* thread_pool_create(size_t num_threads);
+void thread_pool_free(thread_pool* pool);
+
 status_e gecko_pool_enqueue_tasks(thread_task* task, thread_pool* pool, size_t num_threads);
 status_e gecko_pool_enqueue_task(thread_task* task, thread_pool* pool);
 size_t gecko_pool_create_group_id();
