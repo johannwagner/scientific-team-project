@@ -1,4 +1,4 @@
-#include "thread_pool.h"
+#include "../include/thread_pool.h"
 #include <stdlib.h>
 #include <string.h>
 
@@ -9,8 +9,12 @@
 thread_pool* thread_pool_create(size_t num_threads) {
    thread_pool* pool = malloc(sizeof(thread_pool));
    pool->size = num_threads;
+   pool->waiting_tasks = calloc(1, sizeof(priority_queue_t));
+   pool->thread_status = malloc(sizeof(thread_status_e) * num_threads);
 
-   pthread_t* threads = malloc(sizeof(pthread_t) * (num_threads + 1));
+   pthread_t* threads = malloc(sizeof(pthread_t) * num_threads);
+   pool->pool = threads;
+
    //create empty threads which themselves catch their own tasks from the created queue
    for(size_t i = 0; i < num_threads; i++) {
      __thread_information* thread_info = malloc(sizeof(__thread_information));
@@ -26,9 +30,8 @@ thread_pool* thread_pool_create(size_t num_threads) {
      }
      counter_threads++; */
    }
-
-   pool->pool = threads;
-   memset(pool->thread_status, thread_status_idle, sizeof(size_t) * num_threads);
+   
+   memset(pool->thread_status, thread_status_idle, sizeof(thread_status_e) * num_threads);
    return pool;
 }
 
@@ -101,9 +104,12 @@ void *__thread_main(void* args) {
 
 	}
 
+  __update_thread_status(thread_info->pool, thread_info->id, thread_status_finished);
+
   // Be sure to free the passed thread_information since no other reference exists
   free(thread_info);
 
+  return (void*)0;
 }
 
 status_e __check_for_group_queue(priority_queue_t* waiting_tasks, size_t size, size_t task_id) {

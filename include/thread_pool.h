@@ -17,7 +17,7 @@
 //
 
 //static pthread_t counter_threads = 0;
-static pthread_t counter_tasks = 0;
+static size_t counter_tasks = 0;
 
 //
 //	STRUCTS
