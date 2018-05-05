@@ -86,7 +86,7 @@ void *__thread_main(void* args) {
 
   while(1){
 
-    __enqueued_task* next_task = __get_next_task(thread_info->pool);
+    thread_task* next_task = __get_next_task(thread_info->pool);
     if(next_task) {
 
       // Check if this thread has to terminate
@@ -94,7 +94,7 @@ void *__thread_main(void* args) {
         break;
 
       // Execute task
-      (*next_task->thread->routine)(next_task->thread->args);
+      (*next_task->routine)(next_task->args);
     }
 
     // Check if this thread has to terminate
@@ -115,7 +115,7 @@ void *__thread_main(void* args) {
 
 status_e __check_for_group_queue(priority_queue_t* waiting_tasks, size_t size, size_t task_id) {
   for(size_t i=0; i < size; i++) {
-    if (((__enqueued_task*)waiting_tasks[i].data->element)->id == task_id) { //TODO: id?
+    if (((thread_task*)waiting_tasks[i].data->element)->group_id == task_id) { //TODO: id?
       //returns failed in case queue still contains specified task id
       return status_failed;
     }
@@ -129,9 +129,9 @@ status_e __check_for_group_queue(priority_queue_t* waiting_tasks, size_t size, s
 //  return status_ok;
 //}
 
-__enqueued_task* __get_next_task(thread_pool *pool) {
+thread_task* __get_next_task(thread_pool *pool) {
   if(!priority_queue_is_empty(pool->waiting_tasks))
-    return (__enqueued_task*) priority_queue_pop(pool->waiting_tasks);
+    return (thread_task*) priority_queue_pop(pool->waiting_tasks);
   else
     return NULL;
 }

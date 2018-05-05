@@ -29,7 +29,7 @@ TEST(ThreadPool, CreateGroupId) {
 
 void basicTask (void* args) {
     int* number = (int*) args;
-    printf("number has value: %i", *number);
+    std::cout << "number has value: " <<  *number << std::endl;
 }
 
 TEST(ThreadPool, BasicTasks){
@@ -39,10 +39,15 @@ TEST(ThreadPool, BasicTasks){
     size_t id2 = gecko_pool_create_group_id();
 
     thread_task* test_task = (thread_task*)malloc(sizeof(thread_task));
-    test_task->args = (void*)5;
+    
+    int test = 5;
+    
+    test_task->args = (void*)&test;
     test_task->routine = &basicTask;
 
     for(int i = 0; i < 6; i++){
         gecko_pool_enqueue_task(test_task, pool);
     }
+
+    thread_pool_free(pool);
 }
