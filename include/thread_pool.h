@@ -46,11 +46,8 @@ typedef struct __enqueued_task {
 } __enqueued_task;
 
 typedef struct __thread_information {
-	void* args;
-	task_routine routine;
 	thread_pool* pool;
 	size_t id;
-	size_t is_active;
 } __thread_information;
 
 //
