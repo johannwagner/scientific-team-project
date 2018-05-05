@@ -63,24 +63,34 @@ status_e gecko_pool_wait_for_id(size_t id, thread_pool* pool) {
 //
 
 void *__thread_main(void* args) {
-  //pthread_attr_t* attr;
-  /*__thread_information thread_info;
-  thread_info.is_active = 0;
-  thread_pool* pool = ((thread_pool*)args);
+  __thread_information* thread_info = (__thread_information*)args;
 
   while(1){
-		if(thread_info.is_active == 1) {
-            (*thread_info.routine)(thread_info.args);
-			thread_info.is_active = 0;
-		}
-		else {
-			__enqueued_task* next_task = __get_next_task(pool);
-			thread_info.routine = next_task->thread->routine;
-      thread_info.args = next_task->thread->args;
-      //attr = next_task->thread->attr;
-      thread_info.is_active = 1;
-		}
-	}*/
+
+    __enqueued_task* next_task = __get_next_task(thread_info->pool);
+    if(next_task) {
+
+      // Check if this thread has to terminate
+      if(thread_status_will_terminate == __update_thread_status(thread_info->pool, thread_info->id, thread_status_working))
+        break;
+
+      thread_info->routine = next_task->thread->routine;
+      thread_info->args = next_task->thread->args;
+      
+      // Execute task
+      (*thread_info->routine)(thread_info->args);
+    }
+    
+    // Check if this thread has to terminate
+    if(thread_status_will_terminate == __update_thread_status(thread_info->pool, thread_info->id, thread_status_idle))
+      break;
+
+    // TODO: idle
+
+	}
+
+  // Be sure to free the passed thread_information since no other reference exists
+  free(thread_info);
 
 }
 
@@ -105,4 +115,15 @@ __enqueued_task* __get_next_task(thread_pool *pool) {
     return (__enqueued_task*) priority_queue_pop(pool->waiting_tasks);
   else
     return NULL;
+}
+
+
+thread_status_e __update_thread_status(thread_pool* pool, size_t thread_id, thread_status_e thread_status) {
+  // Check if free is called on the thread pool and tell the thread to finish
+  if(pool->states[thread_id] == thread_status_will_terminate)
+    return thread_status_will_terminate;
+
+  // Otherwise update thread status in pool
+  pool->states[thread_id] = thread_status;
+  return thread_status_empty;
 }
