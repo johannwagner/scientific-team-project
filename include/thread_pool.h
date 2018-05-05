@@ -17,7 +17,6 @@
 
 //static pthread_t counter_threads = 0;
 static pthread_t counter_tasks = 0;
-
 //
 //	STRUCTS
 //
@@ -34,7 +33,7 @@ typedef struct thread_pool {
 	pthread_t* pool;
 	priority_queue_t* waiting_tasks;
 	size_t size;
-
+    size_t* thread_status;
 } thread_pool;
 
 typedef struct __enqueued_task {
@@ -47,8 +46,9 @@ typedef struct __enqueued_task {
 typedef struct __thread_information {
 	void* args;
 	task_routine routine;
-	uint is_active;
 	thread_pool* pool;
+	size_t id;
+	size_t is_active;
 } __thread_information;
 
 //
