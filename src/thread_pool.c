@@ -7,13 +7,13 @@
 //
 
 thread_pool* thread_pool_create(size_t num_threads) {
-   thread_pool* pool = (thread_pool*)malloc(sizeof(thread_pool));
+   thread_pool* pool = malloc(sizeof(thread_pool));
    pool->size = num_threads;
 
-   pthread_t* threads = (pthread_t*)malloc(sizeof(pthread_t) * (num_threads + 1));
+   pthread_t* threads = malloc(sizeof(pthread_t) * (num_threads + 1));
    //create empty threads which themselves catch their own tasks from the created queue
    for(size_t i = 0; i < num_threads; i++) {
-     __thread_information* thread_info = (__thread_information*)malloc(sizeof(__thread_information));
+     __thread_information* thread_info = malloc(sizeof(__thread_information));
      thread_info->pool = pool;
      thread_info->id = i;
      pthread_create(&threads[i],NULL , &__thread_main, thread_info);
@@ -33,8 +33,17 @@ thread_pool* thread_pool_create(size_t num_threads) {
 }
 
 void thread_pool_free(thread_pool* pool) {
-    //TODO: Check active threads
+    // Update all status and wait until the threads finish
+    for(size_t i=0; i < pool->size; ++i) {
+      pool->thread_status[i] = thread_status_will_terminate;
+    }
+
+    for(size_t i=0; i < pool->size; ++i) {
+      pthread_join(pool->pool[i], NULL);
+    }
+
     free(pool->pool);
+    free(pool->waiting_tasks);
     free(pool);
 }
 
