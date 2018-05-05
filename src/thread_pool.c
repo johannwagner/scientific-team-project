@@ -50,10 +50,13 @@ void thread_pool_free(thread_pool* pool) {
     free(pool);
 }
 
-status_e gecko_pool_enqueue_tasks(thread_task* tasks, thread_pool* pool, size_t num_threads) {
-  for(size_t i= 0; i < num_threads; i++) {
+status_e gecko_pool_enqueue_tasks(thread_task* tasks, thread_pool* pool, size_t num_tasks) {
+  size_t group_id = gecko_pool_create_group_id();
+  
+  for(size_t i= 0; i < num_tasks; i++) {
     //Assuming queue will conatin something like this, this will not fail
-    priority_queue_push(pool->waiting_tasks, &tasks[i], 1);  //TODO: set prio
+    tasks[i].group_id = group_id;
+    priority_queue_push(pool->waiting_tasks, &tasks[i], tasks[i].priority); 
   }
   return status_ok;
 }
