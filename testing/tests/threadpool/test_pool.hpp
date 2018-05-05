@@ -46,7 +46,9 @@ TEST(ThreadPool, BasicTasks){
     test_task->routine = &basicTask;
 
     for(int i = 0; i < 6; i++){
+        std::cout << "enqueueing " << i << std::endl;
         gecko_pool_enqueue_task(test_task, pool);
+        std::cout << "enqueued " << i << std::endl;
     }
 
     thread_pool_free(pool);

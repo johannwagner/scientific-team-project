@@ -11,6 +11,7 @@ thread_pool* thread_pool_create(size_t num_threads) {
    pool->size = num_threads;
    pool->waiting_tasks = calloc(1, sizeof(priority_queue_t));
    pool->thread_status = malloc(sizeof(thread_status_e) * num_threads);
+   pool->thread_tasks = calloc(num_threads, sizeof(thread_task*));
 
    pthread_t* threads = malloc(sizeof(pthread_t) * num_threads);
    pool->pool = threads;
@@ -58,6 +59,9 @@ status_e gecko_pool_enqueue_tasks(thread_task* tasks, thread_pool* pool, size_t 
     tasks[i].group_id = group_id;
     priority_queue_push(pool->waiting_tasks, &tasks[i], tasks[i].priority); 
   }
+
+  gecko_pool_wait_for_id(group_id, pool);
+
   return status_ok;
 }
 
@@ -70,9 +74,14 @@ size_t gecko_pool_create_group_id() {
 }
 
 status_e gecko_pool_wait_for_id(size_t id, thread_pool* pool) {
-  while(__check_for_group_queue(pool->waiting_tasks,0, id) == status_failed){ //TODO: set size
+  while(__check_for_group_queue(pool->waiting_tasks,pool->waiting_tasks->num_elements, id) == status_failed){ //TODO: set size
     //adjust this to not constantly check array for task_id contains instead check only when changes occur
   }
+
+  while(__check_for_thread_tasks(pool,id) == status_failed){ //TODO: set size
+    //adjust this to not constantly check array for task_id contains instead check only when changes occur
+  }
+
   return status_ok;
 }
 
@@ -86,7 +95,7 @@ void *__thread_main(void* args) {
 
   while(1){
 
-    thread_task* next_task = __get_next_task(thread_info->pool);
+    thread_task* next_task = __get_next_task(thread_info->pool, thread_info->id);
     if(next_task) {
 
       // Check if this thread has to terminate
@@ -95,6 +104,9 @@ void *__thread_main(void* args) {
 
       // Execute task
       (*next_task->routine)(next_task->args);
+      
+      if(thread_status_will_terminate == __update_thread_status(thread_info->pool, thread_info->id, thread_status_completed))
+        break;
     }
 
     // Check if this thread has to terminate
@@ -115,11 +127,25 @@ void *__thread_main(void* args) {
 
 status_e __check_for_group_queue(priority_queue_t* waiting_tasks, size_t size, size_t task_id) {
   for(size_t i=0; i < size; i++) {
-    if (((thread_task*)waiting_tasks[i].data->element)->group_id == task_id) { //TODO: id?
+    __element_info_t* element_info = &waiting_tasks->data[i];
+    if (((thread_task*)element_info->element)->group_id == task_id) { 
       //returns failed in case queue still contains specified task id
       return status_failed;
     }
   }
+
+  //returns ok in case of no further waiting
+  return status_ok;
+}
+
+status_e __check_for_thread_tasks(thread_pool* pool, size_t id) {
+   for(size_t i=0; i < pool->size; i++) {
+    thread_task* task = pool->thread_tasks[i];
+
+      if(task && task->group_id == id)
+        return status_failed;
+   }
+    
   //returns ok in case of no further waiting
   return status_ok;
 }
@@ -129,9 +155,14 @@ status_e __check_for_group_queue(priority_queue_t* waiting_tasks, size_t size, s
 //  return status_ok;
 //}
 
-thread_task* __get_next_task(thread_pool *pool) {
+thread_task* __get_next_task(thread_pool *pool, size_t thread_id) {
   if(!priority_queue_is_empty(pool->waiting_tasks))
-    return (thread_task*) priority_queue_pop(pool->waiting_tasks);
+  {
+     thread_task* next_task = priority_queue_pop(pool->waiting_tasks);
+     pool->thread_tasks[thread_id] = next_task;
+
+     return next_task;
+  }
   else
     return NULL;
 }
@@ -141,6 +172,9 @@ thread_status_e __update_thread_status(thread_pool* pool, size_t thread_id, thre
   // Check if free is called on the thread pool and tell the thread to finish
   if(pool->thread_status[thread_id] == thread_status_will_terminate)
     return thread_status_will_terminate;
+
+  if(thread_status == thread_status_completed)
+    pool->thread_tasks[thread_id] = NULL;
 
   // Otherwise update thread status in pool
   pool->thread_status[thread_id] = thread_status;

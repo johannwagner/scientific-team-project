@@ -10,6 +10,7 @@ typedef enum thread_status_e
     thread_status_killed = 4,
     thread_status_created = 5,
     thread_status_will_terminate = 6,
+    thread_status_completed = 7,
     thread_status_empty = 99
 } thread_status_e;
 

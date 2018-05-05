@@ -38,15 +38,16 @@ typedef struct thread_pool {
 	priority_queue_t* waiting_tasks;
 	size_t size;
     thread_status_e* thread_status;
+	thread_task** thread_tasks;
 } thread_pool;
 
-typedef struct __enqueued_task {
+/*typedef struct __enqueued_task {
 	struct thread_task* thread;
 	size_t priority;
 	size_t id;
 	size_t is_activated;
 } __enqueued_task;
-
+*/
 typedef struct __thread_information {
 	thread_pool* pool;
 	size_t id;
@@ -69,12 +70,12 @@ status_e gecko_pool_wait_for_id(size_t id, thread_pool* pool);
 //
 
 void *__thread_main(void *args);
-status_e __task_finished(__enqueued_task* task);
 void __thread_idle();
 status_e __check_for_group_queue(priority_queue_t* waiting_tasks, size_t size, size_t task_id);
+status_e __check_for_thread_tasks(thread_pool* pool, size_t id);
 //status_e __remove_from_queue(priority_queue_t* waiting_tasks, size_t task_id);
 
-thread_task* __get_next_task(thread_pool *pool);
+thread_task* __get_next_task(thread_pool *pool, size_t thread_id);
 
 thread_status_e __update_thread_status(thread_pool* pool, size_t thread_id, thread_status_e thread_status);
 
