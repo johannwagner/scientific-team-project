@@ -10,6 +10,7 @@
 
 #include "status.h"
 #include "priority_queue.h"
+#include "thread_status.h"
 
 //
 //	GLOBAL VARIABLES
@@ -17,6 +18,7 @@
 
 //static pthread_t counter_threads = 0;
 static pthread_t counter_tasks = 0;
+
 //
 //	STRUCTS
 //
@@ -33,7 +35,7 @@ typedef struct thread_pool {
 	pthread_t* pool;
 	priority_queue_t* waiting_tasks;
 	size_t size;
-    size_t* thread_status;
+    thread_status_e* thread_status;
 } thread_pool;
 
 typedef struct __enqueued_task {
@@ -74,5 +76,7 @@ status_e __check_for_group_queue(priority_queue_t* waiting_tasks, size_t size, s
 //status_e __remove_from_queue(priority_queue_t* waiting_tasks, size_t task_id);
 
 __enqueued_task* __get_next_task(thread_pool *pool);
+
+thread_status_e __update_thread_status(thread_pool* pool, size_t thread_id, thread_status_e thread_status);
 
 #endif //THREAD_POOL_H
