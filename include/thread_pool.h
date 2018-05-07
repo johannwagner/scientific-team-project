@@ -11,6 +11,7 @@
 #include "status.h"
 #include "priority_queue.h"
 #include "thread_status.h"
+#include <time.h>
 
 //
 //	GLOBAL VARIABLES

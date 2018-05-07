@@ -92,6 +92,9 @@ status_e gecko_pool_wait_for_id(size_t id, thread_pool* pool) {
 void *__thread_main(void* args) {
   __thread_information* thread_info = (__thread_information*)args;
 
+  //structs for short waiting interval
+  struct timespec waiting_time_start = {0 , 0};
+  struct timespec waiting_time_end = {0 , 100};
 
   while(1){
 
@@ -113,8 +116,8 @@ void *__thread_main(void* args) {
     if(thread_status_will_terminate == __update_thread_status(thread_info->pool, thread_info->id, thread_status_idle))
       break;
 
-    // TODO: idle
-
+    if(!next_task) {}
+        nanosleep(&waiting_time_start, &waiting_time_end);
 	}
 
   __update_thread_status(thread_info->pool, thread_info->id, thread_status_finished);
