@@ -1,0 +1,94 @@
+ \documentclass{beamer}
+
+\usetheme{MagdeburgFIN}
+\usefonttheme{structurebold}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{url}
+\usepackage{pdfpages}
+\usepackage[ngerman]{babel}
+\usepackage[utf8]{inputenc}
+
+\title{Thread Pool in GeckoDB/BOLSTER}
+\subtitle{Milestone II: Concept \& additional literature research}
+\author{Johann Wagner, Johannes Wünsche, Marten Wallewein-Eising, Robert Jenderise, Benedikt Zeilinger}
+\date{\today}
+\institute{Otto von Guericke University, Magdeburg}
+
+% Milestone II: Concept & additional literature research
+
+\begin{document}
+
+\begin{frame}[plain]
+ \titlepage
+\end{frame}
+
+\section[Agenda]{}
+	\begin{frame}
+	\frametitle{Agenda}
+	\tableofcontents
+	\end{frame}
+
+\section{Previously...}
+\begin{frame}
+	\frametitle{Previously in Thread Pool in GeckoDB/BOLSTER}
+	\begin{itemize}
+		\item Operations are spawning dozens of threads, which are not handled and managed
+		\item Heavy overhead of creating and removing threads
+		\item After some operations profiler dies (too many threads)
+	\end{itemize}
+	\begin{center}
+		\includegraphics[width=0.3\textwidth]{img/thumbs_down.png}
+	\end{center}
+\end{frame}
+
+\begin{frame}
+	\frametitle{Previously in Thread Pool in GeckoDB/BOLSTER}
+	\begin{itemize}
+		\item Reuse of Threads with thread pools.
+		\item Reduce overhead of thread management
+		\item Improve maintainability of parallel code
+	\end{itemize}
+	\begin{center}
+		\includegraphics[width=0.3\textwidth]{img/thumbs_up.png}
+	\end{center}
+\end{frame}
+
+\section{Concept and Design}
+\begin{frame}
+	\frametitle{Concept}
+	\begin{itemize}
+		\item Thread pool with runtime fixed amount of threads and lock free priority queue
+		\item Tasks are not preemtable and independent
+		\item Array of tasks passed to an enqueue function, which waits until all tasks are finished
+		\item Threads without tasks idle until they get a new one
+		\item Monitoring/managing state and assigned task of each thread
+	\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Design}
+	\begin{center}
+		\includegraphics[width=0.9\textwidth]{img/pool_queue.png}
+	\end{center}
+\end{frame}
+
+
+\section{Current Progress}
+
+\section{Next Steps}
+
+\section{Additional Literature Research}
+    \begin{frame}
+        \frametitle{Literature Research}
+        \begin{itemize}
+            \item 
+        \end{itemize}
+    \end{frame}
+
+
+
+    \begin{frame}
+        \frametitle{Thank you for your attention!}
+    \end{frame}
+\end{document}
