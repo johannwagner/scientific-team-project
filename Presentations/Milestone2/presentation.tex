@@ -73,14 +73,47 @@
 	\end{center}
 \end{frame}
 
-
 \section{Current Progress}
+\begin{frame}
+	\frametitle{Current Progress}
+	We...
+	\begin{itemize}
+		\item Implemented the lock free priority queue 
+		\item Implemented the creation of threads and the assigning of tasks
+		\item Added gtest framework to project and wrote tests for pool and queue
+		\item Began first implementations of waiting for tasks to be finished
+	\end{itemize}
+\end{frame}
 
 \section{Next Steps}
+\begin{frame}
+	\frametitle{Next Steps}
+	We have to ...
+	\begin{itemize}
+		\item Find an efficient way ton wait for tasks
+		\item Find an efficient way to idle threads until they get the next tasks
+		\item Add metrics to threads and tasks and measure performance and overhead
+		\item Add tests for all implementations
+	\end{itemize}
+\end{frame}
+
+\begin{frame}
+	\frametitle{Next Steps - Scheduling}
+	Current approach:  
+	\begin{itemize}
+		\item Threads ask for next task in queue
+	\end{itemize}
+	Desired implementation: 
+	\begin{itemize}
+		\item Make own scheduling, assign tasks to threads
+		\item Add possibility to try different scheduling approaches
+		\item Measure thread idle and busy time for the approaches
+	\end{itemize}
+\end{frame}
 
 \section{Additional Literature Research}
     \begin{frame}
-        \frametitle{Literature Research}
+        \frametitle{Additional Literature Research}
         \begin{itemize}
             \item 
         \end{itemize}
