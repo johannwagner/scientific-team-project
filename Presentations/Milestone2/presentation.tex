@@ -36,6 +36,7 @@
 		\item Operations are spawning dozens of threads, which are not handled and managed
 		\item Heavy overhead of creating and removing threads
 		\item After some operations profiler dies (too many threads)
+		\item Because of Late/Early Materialization and Prefetching Support, existing libs are not adequate
 	\end{itemize}
 	\begin{center}
 		\includegraphics[width=0.3\textwidth]{img/thumbs_down.png}
@@ -48,6 +49,7 @@
 		\item Reuse of Threads with thread pools.
 		\item Reduce overhead of thread management
 		\item Improve maintainability of parallel code
+		\item Support the performance and design requirements (e.g. Future and Promise) of BOLSTER
 	\end{itemize}
 	\begin{center}
 		\includegraphics[width=0.3\textwidth]{img/thumbs_up.png}
@@ -63,6 +65,7 @@
 		\item Array of tasks passed to an enqueue function, which waits until all tasks are finished
 		\item Threads without tasks idle until they get a new one
 		\item Monitoring/managing state and assigned task of each thread
+		\item Allow usage of multiple, independent thread pool instances 
 	\end{itemize}
 \end{frame}
 
@@ -82,6 +85,7 @@
 		\item Implemented the creation of threads and the assigning of tasks
 		\item Added gtest framework to project and wrote tests for pool and queue
 		\item Began first implementations of waiting for tasks to be finished
+		\item Measure performance of task assigning and execution
 	\end{itemize}
 \end{frame}
 
@@ -115,7 +119,9 @@
     \begin{frame}
         \frametitle{Additional Literature Research}
         \begin{itemize}
-            \item 
+            \item Albahari, Joseph. \emph{Threading in C.} online. Joseph Albahari \& O’Reilly Media, Inc (2006).
+            \item Rasmussen, Rasmus V., and Michael A. Trick. \emph{Round robin scheduling–a survey.} European Journal of Operational Research 188.3 (2008): 617-636.
+            \item Shreedhar, Madhavapeddi, and George Varghese. \emph{Efficient fair queueing using deficit round robin.} ACM SIGCOMM Computer Communication Review. Vol. 25. No. 4. ACM, 1995.
         \end{itemize}
     \end{frame}
 
