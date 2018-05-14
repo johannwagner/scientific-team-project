@@ -10,6 +10,11 @@ void priority_queue_init(priority_queue_t* queue)
     queue->data = NULL;
 }
 
+void priority_queue_free(priority_queue_t* queue)
+{
+    free(queue->data);
+}
+
 void priority_queue_resize(priority_queue_t* queue, size_t size)
 {
     __element_info_t* new_data = malloc(sizeof(__element_info_t) * size);
@@ -103,13 +108,18 @@ void* priority_queue_pop(priority_queue_t* queue)
 {
     pthread_mutex_lock(&queue->mutex);
 
-    --queue->num_elements;
+	void* ptr = NULL;
+	
+	if(queue->num_elements)
+	{
+		--queue->num_elements;
 
-    void* ptr = queue->data[0].element;
- //   queue->data[0] = queue->data[queue->num_elements];
-    queue->data[0] = queue->data[queue->num_elements];
-    down_heap(queue->data, queue->num_elements+1);
-
+		ptr = queue->data[0].element;
+	 //   queue->data[0] = queue->data[queue->num_elements];
+		queue->data[0] = queue->data[queue->num_elements];
+		down_heap(queue->data, queue->num_elements+1);
+	}
+	
     pthread_mutex_unlock(&queue->mutex);
     return ptr;
 }
