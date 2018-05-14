@@ -31,7 +31,7 @@ int main()
 	}*/
 
 	thread_pool* pool = thread_pool_create(2);
-
+	task_handle hndl;
 	const int numThreads = 1 << 11;
 	thread_task tasks[numThreads];
 	int results[numThreads];
@@ -40,14 +40,13 @@ int main()
 		tasks[i].args = &results[i];
 		tasks[i].routine = work;
 		tasks[i].priority = 0;
-		tasks[i].group_id = i;
-		gecko_pool_enqueue_task(&tasks[i], pool);
+		if(i == 0) tasks[i].priority = 1;
+		gecko_pool_enqueue_task(&tasks[i], pool, &hndl);
 		if( i == numThreads * 1 / 3) thread_pool_resize(pool, 4);
 		if(i == numThreads * 2 / 3) thread_pool_resize(pool, 3);
 		if(i == numThreads * 3 / 4) thread_pool_resize(pool,2);
 	}
-//	gecko_pool_wait_for_id(1,pool);
-	_sleep(2000);
+	thread_pool_wait_for_task(pool, &hndl);
 	thread_pool_free(pool);
 
 	// verify results

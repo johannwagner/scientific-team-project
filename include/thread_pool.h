@@ -34,9 +34,22 @@ typedef struct thread_task {
 
 struct __thread_information;
 
+
+typedef struct __task_state{
+	atomic_int task_count; //< remaining tasks in this group
+	unsigned generation;
+} __task_state;
+
+typedef struct task_handle{
+	size_t index;
+	unsigned generation;
+} task_handle;
+
 typedef struct thread_pool {
 	pthread_t* pool;
 	priority_queue_t* waiting_tasks;
+	__task_state* task_group_states;
+	size_t task_state_capacity;
 	size_t size;
 	size_t capacity;
 //    thread_status_e* thread_status;
@@ -65,10 +78,10 @@ thread_pool* thread_pool_create(size_t num_threads);
 void thread_pool_free(thread_pool* pool);
 
 status_e thread_pool_resize(thread_pool* pool, size_t newSize);
-status_e gecko_pool_enqueue_tasks(thread_task* task, thread_pool* pool, size_t num_threads);
-status_e gecko_pool_enqueue_task(thread_task* task, thread_pool* pool);
+status_e gecko_pool_enqueue_tasks(thread_task* task, thread_pool* pool, size_t num_threads, task_handle* hndl);
+status_e gecko_pool_enqueue_task(thread_task* task, thread_pool* pool, task_handle* hndl);
 size_t gecko_pool_create_group_id();
-status_e gecko_pool_wait_for_id(size_t id, thread_pool* pool);
+status_e thread_pool_wait_for_task(thread_pool* pool, task_handle* hndl);
 
 //
 //	INTERNAL METHODS

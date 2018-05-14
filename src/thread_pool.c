@@ -18,6 +18,9 @@ thread_pool* thread_pool_create(size_t num_threads) {
    pool->thread_tasks = calloc(num_threads, sizeof(thread_task*));
    pool->thread_infos = malloc(sizeof(__thread_information*) * pool->capacity);
 
+  pool->task_state_capacity = 4096;
+  pool->task_group_states = calloc(pool->task_state_capacity, sizeof(__task_state));
+
    pthread_t* threads = malloc(sizeof(pthread_t) * pool->capacity);
    pool->pool = threads;
 
@@ -53,6 +56,7 @@ void thread_pool_free(thread_pool* pool) {
     free(pool->waiting_tasks);
     free(pool->thread_tasks);
     free(pool->thread_infos);
+    free(pool->task_group_states);
     free(pool);
 }
 
@@ -81,37 +85,42 @@ status_e thread_pool_resize(thread_pool* pool, size_t num_threads)
 	return status_ok;
 }
 
-status_e gecko_pool_enqueue_tasks(thread_task* tasks, thread_pool* pool, size_t num_tasks) {
-  size_t group_id = gecko_pool_create_group_id();
+status_e gecko_pool_enqueue_tasks(thread_task* tasks, thread_pool* pool, size_t num_tasks, task_handle* hndl) {
+  
+  // find unused slot
+  size_t ind = 0;
+  for(; ind < pool->task_state_capacity && pool->task_group_states[ind].task_count; ++ind);
+  if(ind == pool->task_state_capacity) return status_failed;
+
+  ++pool->task_group_states[ind].generation;
+  pool->task_group_states[ind].task_count = num_tasks;
   
   for(size_t i= 0; i < num_tasks; i++) {
     //Assuming queue will conatin something like this, this will not fail
-    tasks[i].group_id = group_id;
+    tasks[i].group_id = ind;
     priority_queue_push(pool->waiting_tasks, &tasks[i], tasks[i].priority); 
   }
 
-//  gecko_pool_wait_for_id(group_id, pool);
+  if(hndl){
+    hndl->index = ind;
+    hndl->generation = pool->task_group_states[ind].generation;
+  }
 
   return status_ok;
 }
 
-status_e gecko_pool_enqueue_task(thread_task* task, thread_pool* pool) {
-  return gecko_pool_enqueue_tasks(task, pool, 1);
+status_e gecko_pool_enqueue_task(thread_task* task, thread_pool* pool, task_handle* hndl) {
+  return gecko_pool_enqueue_tasks(task, pool, 1, hndl);
 }
 
 size_t gecko_pool_create_group_id() {
   return counter_tasks++;
 }
 
-status_e gecko_pool_wait_for_id(size_t id, thread_pool* pool) {
-  while(__check_for_group_queue(pool->waiting_tasks,pool->waiting_tasks->num_elements, id) == status_failed){ //TODO: set size
-    //adjust this to not constantly check array for task_id contains instead check only when changes occur
-  }
-
-  while(__check_for_thread_tasks(pool,id) == status_failed){ //TODO: set size
-    //adjust this to not constantly check array for task_id contains instead check only when changes occur
-  }
-
+status_e thread_pool_wait_for_task(thread_pool* pool, task_handle* hndl) {
+  volatile unsigned* gen = &pool->task_group_states[hndl->index].generation;
+  while(*gen == hndl->generation 
+     && pool->task_group_states[hndl->index].task_count) {}
   return status_ok;
 }
 
@@ -134,6 +143,7 @@ void *__thread_main(void* args) {
   //    __update_thread_status(thread_info->pool, thread_info->id, thread_status_working);
       // Execute task
       (*next_task->routine)(next_task->args);
+      --thread_info->pool->task_group_states[next_task->group_id].task_count;
     }
 
     // Check if this thread has to terminate, set the status and leave the loop
