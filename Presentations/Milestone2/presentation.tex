@@ -60,7 +60,7 @@
 \begin{frame}
 	\frametitle{Concept}
 	\begin{itemize}
-		\item Thread pool with runtime fixed amount of threads and lock free priority queue
+		\item Thread pool with runtime dynamic amount of threads and priority queue
 		\item Tasks are not preemtable and independent
 		\item Array of tasks passed to an enqueue function, which waits until all tasks are finished
 		\item Threads without tasks idle until they get a new one
@@ -81,7 +81,7 @@
 	\frametitle{Current Progress}
 	We...
 	\begin{itemize}
-		\item Implemented the lock free priority queue 
+		\item Implemented the priority queue 
 		\item Implemented the creation of threads and the assigning of tasks
 		\item Added gtest framework to project and wrote tests for pool and queue
 		\item Began first implementations of waiting for tasks to be finished
@@ -106,7 +106,7 @@
 	\frametitle{Next Steps}
 	We have to ...
 	\begin{itemize}
-		\item Find an efficient way ton wait for tasks
+		\item Find an efficient way to wait for tasks
 		\item Find an efficient way to idle threads until they get the next tasks
 		\item Add metrics to threads and tasks and measure performance and overhead
 		\item Add tests for all implementations
