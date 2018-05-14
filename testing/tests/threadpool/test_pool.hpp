@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
 
-extern "C" 
+extern "C"
 {
 	#include "../../../include/thread_pool.h"
 }
@@ -12,7 +12,7 @@ TEST(ThreadPool, Create) {
     EXPECT_TRUE(pool);
 
     thread_pool_free(pool);
-   
+
 }
 
 // Test the creatrion of group Ids of thread pools
@@ -39,15 +39,15 @@ TEST(ThreadPool, BasicTasks){
     size_t id2 = gecko_pool_create_group_id();
 
     thread_task* test_task = (thread_task*)malloc(sizeof(thread_task));
-    
+
     int test = 5;
-    
+
     test_task->args = (void*)&test;
     test_task->routine = &basicTask;
 
     for(int i = 0; i < 6; i++){
         std::cout << "enqueueing " << i << std::endl;
-        gecko_pool_enqueue_task(test_task, pool);
+        gecko_pool_enqueue_task(test_task, pool, NULL);
         std::cout << "enqueued " << i << std::endl;
     }
 
