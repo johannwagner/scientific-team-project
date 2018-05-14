@@ -18,6 +18,7 @@ typedef struct priority_queue_t
 } priority_queue_t;
 
 void priority_queue_init(priority_queue_t* queue);
+void priority_queue_free(priority_queue_t* queue);
 void priority_queue_push(priority_queue_t* queue, void* data, size_t priority);
 void* priority_queue_pop(priority_queue_t* queue);
 int priority_queue_is_empty(priority_queue_t* queue);

@@ -7,6 +7,7 @@
 
 #include <stdlib.h>
 #include <pthread.h>
+#include <stdatomic.h>
 
 #include "status.h"
 #include "priority_queue.h"
@@ -16,9 +17,6 @@
 //
 //	GLOBAL VARIABLES
 //
-
-//static pthread_t counter_threads = 0;
-static size_t counter_tasks = 0;
 
 //
 //	STRUCTS
@@ -34,11 +32,15 @@ typedef struct thread_task {
 	size_t priority;
 } thread_task;
 
+struct __thread_information;
+
 typedef struct thread_pool {
 	pthread_t* pool;
 	priority_queue_t* waiting_tasks;
 	size_t size;
-    thread_status_e* thread_status;
+	size_t capacity;
+//    thread_status_e* thread_status;
+	struct __thread_information** thread_infos;
 	thread_task** thread_tasks;
 } thread_pool;
 
@@ -52,6 +54,7 @@ typedef struct thread_pool {
 typedef struct __thread_information {
 	thread_pool* pool;
 	size_t id;
+	atomic_int status;
 } __thread_information;
 
 //
@@ -61,6 +64,7 @@ typedef struct __thread_information {
 thread_pool* thread_pool_create(size_t num_threads);
 void thread_pool_free(thread_pool* pool);
 
+status_e thread_pool_resize(thread_pool* pool, size_t newSize);
 status_e gecko_pool_enqueue_tasks(thread_task* task, thread_pool* pool, size_t num_threads);
 status_e gecko_pool_enqueue_task(thread_task* task, thread_pool* pool);
 size_t gecko_pool_create_group_id();
@@ -78,6 +82,7 @@ status_e __check_for_thread_tasks(thread_pool* pool, size_t id);
 
 thread_task* __get_next_task(thread_pool *pool, size_t thread_id);
 
+status_e __create_thread(__thread_information* thread_info, pthread_t* pp);
 thread_status_e __update_thread_status(thread_pool* pool, size_t thread_id, thread_status_e thread_status);
 
 #endif //THREAD_POOL_H
