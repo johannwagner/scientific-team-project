@@ -89,6 +89,18 @@
 	\end{itemize}
 \end{frame}
 
+\begin{frame}
+	\frametitle{Wait for task ID - Problem}
+	\begin{itemize}
+		\item Problem: waiting for a task to complete could lead to a
+			race condition
+		\item This was caused by the uncertainty of a thread\_task
+			during transition between the priority queue and the
+			thread pool
+		\item Solution: Threads now increase an atomic counter
+	\end{itemize}
+\end{frame}
+
 \section{Next Steps}
 \begin{frame}
 	\frametitle{Next Steps}
@@ -119,13 +131,11 @@
     \begin{frame}
         \frametitle{Additional Literature Research}
         \begin{itemize}
-            \item Albahari, Joseph. \emph{Threading in C.} online. Joseph Albahari \& O’Reilly Media, Inc (2006).
+            \item Albahari, Joseph. \emph{Threading in C\#.} online. Joseph Albahari \& O’Reilly Media, Inc (2006).
             \item Rasmussen, Rasmus V., and Michael A. Trick. \emph{Round robin scheduling–a survey.} European Journal of Operational Research 188.3 (2008): 617-636.
             \item Shreedhar, Madhavapeddi, and George Varghese. \emph{Efficient fair queueing using deficit round robin.} ACM SIGCOMM Computer Communication Review. Vol. 25. No. 4. ACM, 1995.
         \end{itemize}
     \end{frame}
-
-
 
     \begin{frame}
         \frametitle{Thank you for your attention!}
