@@ -3,6 +3,7 @@
 \usetheme{MagdeburgFIN}
 \usefonttheme{structurebold}
 \usepackage{graphicx}
+\usepackage{wrapfig,lipsum}
 \usepackage{float}
 \usepackage{url}
 \usepackage{pdfpages}
@@ -90,15 +91,22 @@
 \end{frame}
 
 \begin{frame}
-	\frametitle{Wait for task ID - Problem}
-	\begin{itemize}
-		\item Problem: waiting for a task to complete could lead to a
-			race condition
-		\item This was caused by the uncertainty of a thread\_task
-			during transition between the priority queue and the
-			thread pool
-		\item Solution: Threads now increase an atomic counter
-	\end{itemize}
+	\frametitle{Wait for task - Problem}
+	\begin{columns}
+		\begin{column}{0.48\textwidth}
+			\begin{itemize}
+				\item Problem: waiting for a task to complete could lead to a
+				race condition
+				\item This was caused by the uncertainty of a thread\_task
+				during transition between the priority queue and the
+				thread pool
+				\item Solution: slotmap with an atomic counter
+			\end{itemize}
+		\end{column}
+		\begin{column}{0.48\textwidth}
+			\includegraphics[width=1.0\textwidth]{waitingconcept.png}
+		\end{column}
+	\end{columns}
 \end{frame}
 
 \section{Next Steps}
