@@ -49,7 +49,7 @@ typedef struct thread_pool {
 	pthread_t* pool;
 	priority_queue_t* waiting_tasks;
 	__task_state* task_group_states;
-	size_t task_state_capacity;
+	size_t task_state_capacity; // number of threads that can be tracked
 	size_t size;
 	size_t capacity;
 //    thread_status_e* thread_status;
@@ -57,13 +57,6 @@ typedef struct thread_pool {
 	thread_task** thread_tasks;
 } thread_pool;
 
-/*typedef struct __enqueued_task {
-	struct thread_task* thread;
-	size_t priority;
-	size_t id;
-	size_t is_activated;
-} __enqueued_task;
-*/
 typedef struct __thread_information {
 	thread_pool* pool;
 	size_t id;
@@ -75,12 +68,20 @@ typedef struct __thread_information {
 //
 
 thread_pool* thread_pool_create(size_t num_threads);
+// Releases all resources hold by the threadpool. 
+// Currently working threads may finish but tasks left in the queue will be discarded.
 void thread_pool_free(thread_pool* pool);
 
-status_e thread_pool_resize(thread_pool* pool, size_t newSize);
-status_e gecko_pool_enqueue_tasks(thread_task* task, thread_pool* pool, size_t num_threads, task_handle* hndl);
+// Sets the number of active threads to num_threads.
+// Currently working threads are terminated after there task is completed.
+status_e thread_pool_resize(thread_pool* pool, size_t num_threads);
+
+// Add multiple tasks to be executed. Their progress is tracked by a single handle.
+// hndl can be a nullptr.
+status_e gecko_pool_enqueue_tasks(thread_task* task, thread_pool* pool, size_t num_tasks, task_handle* hndl);
 status_e gecko_pool_enqueue_task(thread_task* task, thread_pool* pool, task_handle* hndl);
-size_t gecko_pool_create_group_id();
+
+// Waits until the tasks referenced by hndl are completed.
 status_e thread_pool_wait_for_task(thread_pool* pool, task_handle* hndl);
 
 //

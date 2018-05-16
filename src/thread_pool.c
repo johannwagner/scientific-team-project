@@ -2,9 +2,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-// generate unique ids
-static size_t counter_tasks = 0;
-
 //
 //  EXTERNAL METHODS
 //
@@ -39,11 +36,11 @@ thread_pool* thread_pool_create(size_t num_threads) {
 }
 
 void thread_pool_free(thread_pool* pool) {
-    // Update all status and wait until the threads finish
+    // Update all status
     for(size_t i=0; i < pool->size; ++i) {
       pool->thread_infos[i]->status = thread_status_will_terminate;
     }
-
+    // wait for threads to finish
     for(size_t i=0; i < pool->size; ++i) {
       pthread_join(pool->pool[i], NULL);
       free(pool->thread_infos[i]);
@@ -79,6 +76,7 @@ status_e thread_pool_resize(thread_pool* pool, size_t num_threads)
 	}
   else if(num_threads < pool->size){
     for(size_t i= num_threads; i < pool->size; ++i) {
+      // mark threads for termination
       pool->thread_infos[i]->status = thread_status_will_terminate;
     }
   }
@@ -92,11 +90,11 @@ status_e gecko_pool_enqueue_tasks(thread_task* tasks, thread_pool* pool, size_t 
   for(; ind < pool->task_state_capacity && pool->task_group_states[ind].task_count; ++ind);
   if(ind == pool->task_state_capacity) return status_failed;
 
+  // increment generation first to always be identifiable as finished
   ++pool->task_group_states[ind].generation;
   pool->task_group_states[ind].task_count = num_tasks;
   
   for(size_t i= 0; i < num_tasks; i++) {
-    //Assuming queue will conatin something like this, this will not fail
     tasks[i].group_id = ind;
     priority_queue_push(pool->waiting_tasks, &tasks[i], tasks[i].priority); 
   }
@@ -111,10 +109,6 @@ status_e gecko_pool_enqueue_tasks(thread_task* tasks, thread_pool* pool, size_t 
 
 status_e gecko_pool_enqueue_task(thread_task* task, thread_pool* pool, task_handle* hndl) {
   return gecko_pool_enqueue_tasks(task, pool, 1, hndl);
-}
-
-size_t gecko_pool_create_group_id() {
-  return counter_tasks++;
 }
 
 status_e thread_pool_wait_for_task(thread_pool* pool, task_handle* hndl) {
