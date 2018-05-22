@@ -46,8 +46,11 @@ int main()
 		if(i == numThreads * 2 / 3) thread_pool_resize(pool, 3);
 		if(i == numThreads * 3 / 4) thread_pool_resize(pool,2);
 	}
+	float a = thread_pool_get_time_working(pool);
 	thread_pool_wait_for_task(pool, &hndl);
+	float b = thread_pool_get_time_working(pool);
 	thread_pool_free(pool);
+	printf("fraction of time working: %f, %f\n", a, b);
 
 	// verify results
 	int sum = 0;
@@ -59,4 +62,5 @@ int main()
 	printf("tests completed.");
 
 	getchar();
+	return 0;
 }

@@ -118,6 +118,17 @@ status_e thread_pool_wait_for_task(thread_pool* pool, task_handle* hndl) {
   return status_ok;
 }
 
+double thread_pool_get_time_working(thread_pool* pool){
+  struct timespec end;
+  clock_gettime(CLOCK_MONOTONIC, &end);
+  double avg = 0.f;
+  for(size_t i = 0; i < pool->size; ++i){
+    double t = end.tv_sec - pool->thread_infos[i]->creation_time.tv_sec + (end.tv_nsec - pool->thread_infos[i]->creation_time.tv_nsec) / 1000000000.0;
+    avg += t / (t + pool->thread_infos[i]->time_spend_idle);
+  }
+  return avg / pool->size;
+}
+
 //
 //  INTERNAL METHODS
 //
@@ -128,16 +139,20 @@ void *__thread_main(void* args) {
   //structs for short waiting interval
   struct timespec waiting_time_start = {0 , 0};
   struct timespec waiting_time_end = {0 , 100};
+  clock_gettime(CLOCK_MONOTONIC, &thread_info->creation_time);
+  struct timespec begin = thread_info->creation_time;
 
   while(1){
-
     thread_task* next_task = __get_next_task(thread_info->pool, thread_info->id);
+    // the task has to be executed since it has been taken out of the queue
     if(next_task) {
-      // the task has to be executed since it has been taken out of the queue
-  //    __update_thread_status(thread_info->pool, thread_info->id, thread_status_working);
-      // Execute task
+      // measure time outside to prevent incorrect times while in execution
+      struct timespec end;
+      clock_gettime(CLOCK_MONOTONIC, &end);
+      thread_info->time_spend_idle += (end.tv_sec - begin.tv_sec) + (end.tv_nsec - begin.tv_nsec) / 1000000000.0;
       (*next_task->routine)(next_task->args);
       --thread_info->pool->task_group_states[next_task->group_id].task_count;
+      clock_gettime(CLOCK_MONOTONIC, &begin);
     }
 
     // Check if this thread has to terminate, set the status and leave the loop
@@ -199,6 +214,7 @@ thread_task* __get_next_task(thread_pool *pool, size_t thread_id) {
 
 status_e __create_thread(__thread_information* thread_info, pthread_t* pp){
   thread_info->status = thread_status_created;
+  thread_info->time_spend_idle = 0.f;
   pthread_create(pp,NULL , &__thread_main, thread_info);
 
   return status_ok;

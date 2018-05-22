@@ -61,6 +61,8 @@ typedef struct __thread_information {
 	thread_pool* pool;
 	size_t id;
 	atomic_int status;
+	struct timespec creation_time;
+	double time_spend_idle; // actually the time not spend directly executing a task
 } __thread_information;
 
 //
@@ -84,6 +86,8 @@ status_e gecko_pool_enqueue_task(thread_task* task, thread_pool* pool, task_hand
 // Waits until the tasks referenced by hndl are completed.
 status_e thread_pool_wait_for_task(thread_pool* pool, task_handle* hndl);
 
+// Returns the average fraction of time the active threads have been working.
+double thread_pool_get_time_working(thread_pool* pool);
 //
 //	INTERNAL METHODS
 //
