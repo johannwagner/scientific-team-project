@@ -1,7 +1,25 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <math.h>
+#include <unistd.h>
 #include "priority_queue.h"
 #include "thread_pool.h"
+
+#define WORK_SIZE 40000
+#define NUM_TASKS 2048
+
+void work_large(void* args)
+{
+	double* res = args;
+	double exp = *res;
+
+	double v = 0.0;
+	for(double i = 0; i < 1024; ++i)
+	{
+		v += pow(i, 1 / exp);
+	}
+	*res = v;
+}
 
 void work(void* args)
 {
@@ -14,22 +32,8 @@ void work(void* args)
 //	printf("%d %d\n", n, sum);
 }
 
-int main()
+void resize_test()
 {
-/*	priority_queue_t queue;
-	priority_queue_init(&queue);
-
-	for(size_t i = 0; i < 256; ++i)
-	{
-		priority_queue_push(&queue, (void*)(255-i), 255-i);	
-	}
-
-	while(!priority_queue_is_empty(&queue))
-	{
-		size_t i = (size_t)priority_queue_pop(&queue);
-		printf("%I64d\n",i);
-	}*/
-
 	thread_pool* pool = thread_pool_create(2);
 	task_handle hndl;
 	const int numThreads = 1 << 11;
@@ -46,11 +50,10 @@ int main()
 		if(i == numThreads * 2 / 3) thread_pool_resize(pool, 3);
 		if(i == numThreads * 3 / 4) thread_pool_resize(pool,2);
 	}
-	float a = thread_pool_get_time_working(pool);
-	thread_pool_wait_for_task(pool, &hndl);
-	float b = thread_pool_get_time_working(pool);
+
+//	thread_pool_wait_for_task(pool, &hndl);
+	thread_pool_wait_for_all(pool);
 	thread_pool_free(pool);
-	printf("fraction of time working: %f, %f\n", a, b);
 
 	// verify results
 	int sum = 0;
@@ -59,7 +62,59 @@ int main()
 		sum += i*i / 8;
 		if(results[i] != sum) printf("error at %d: %d != %d\n", i, sum, results[i]);
 	}
-	printf("tests completed.");
+	printf("interleaving test completed.");
+
+}
+
+void performance_test(int numThreads, int numTasks)
+{
+	clock_t begin = clock();
+	double exp = 2.7;
+	for(int i = 0; i < 2048; ++i)
+		work_large(&exp);
+	clock_t end = clock();
+	float time = (double)(end - begin) / CLOCKS_PER_SEC;
+	time /= 2048;
+	printf("time for one task: time: %f | %f\n", time, exp);
+
+
+	thread_pool* pool = thread_pool_create(numThreads);
+
+	double results[numTasks];
+	thread_task tasks[numTasks];
+
+	for(int i = 0; i < numTasks; ++i)
+	{
+		results[i] = (double)(i+1);
+		tasks[i].args = &results[i];
+		tasks[i].routine = work_large;
+		tasks[i].priority = 0;
+		gecko_pool_enqueue_task(&tasks[i], pool, NULL);
+	}
+	sleep(1);
+
+	float a = thread_pool_get_time_working(pool);
+	printf("fraction of time spend working: %f\n",a);
+}
+
+
+int main()
+{
+/*	priority_queue_t queue;
+	priority_queue_init(&queue);
+
+	for(size_t i = 0; i < 256; ++i)
+	{
+		priority_queue_push(&queue, (void*)(255-i), 255-i);	
+	}
+
+	while(!priority_queue_is_empty(&queue))
+	{
+		size_t i = (size_t)priority_queue_pop(&queue);
+		printf("%I64d\n",i);
+	}*/
+//	performance_test(2, 4000);
+	resize_test();
 
 	getchar();
 	return 0;

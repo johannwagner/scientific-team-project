@@ -85,6 +85,7 @@ status_e gecko_pool_enqueue_task(thread_task* task, thread_pool* pool, task_hand
 
 // Waits until the tasks referenced by hndl are completed.
 status_e thread_pool_wait_for_task(thread_pool* pool, task_handle* hndl);
+status_e thread_pool_wait_for_all(thread_pool* pool);
 
 // Returns the average fraction of time the active threads have been working.
 double thread_pool_get_time_working(thread_pool* pool);
@@ -98,7 +99,7 @@ status_e __check_for_group_queue(priority_queue_t* waiting_tasks, size_t size, s
 status_e __check_for_thread_tasks(thread_pool* pool, size_t id);
 //status_e __remove_from_queue(priority_queue_t* waiting_tasks, size_t task_id);
 
-thread_task* __get_next_task(thread_pool *pool, size_t thread_id);
+thread_task* __get_next_task(thread_pool *pool);
 
 status_e __create_thread(__thread_information* thread_info, pthread_t* pp);
 thread_status_e __update_thread_status(thread_pool* pool, size_t thread_id, thread_status_e thread_status);

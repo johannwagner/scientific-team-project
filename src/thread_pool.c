@@ -2,6 +2,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+static inline void __execute_task();
+
 //
 //  EXTERNAL METHODS
 //
@@ -118,6 +120,20 @@ status_e thread_pool_wait_for_task(thread_pool* pool, task_handle* hndl) {
   return status_ok;
 }
 
+status_e thread_pool_wait_for_all(thread_pool* pool){
+  thread_task* next_task;
+  while((next_task = __get_next_task(pool))){
+    __execute_task(pool, next_task);
+  }
+  for(;;){
+    size_t sum = 0;
+    for(size_t i = 0; i < pool->task_state_capacity; ++i)
+      sum += pool->task_group_states[i].task_count;
+    if(!sum) return status_ok;
+  }
+  return status_failed;
+}
+
 double thread_pool_get_time_working(thread_pool* pool){
   struct timespec end;
   clock_gettime(CLOCK_MONOTONIC, &end);
@@ -137,21 +153,20 @@ void *__thread_main(void* args) {
   __thread_information* thread_info = (__thread_information*)args;
 
   //structs for short waiting interval
-  struct timespec waiting_time_start = {0 , 0};
-  struct timespec waiting_time_end = {0 , 100};
+//  struct timespec waiting_time_start = {0 , 0};
+//  struct timespec waiting_time_end = {0 , 100};
   clock_gettime(CLOCK_MONOTONIC, &thread_info->creation_time);
   struct timespec begin = thread_info->creation_time;
 
   while(1){
-    thread_task* next_task = __get_next_task(thread_info->pool, thread_info->id);
+    thread_task* next_task = __get_next_task(thread_info->pool);
     // the task has to be executed since it has been taken out of the queue
     if(next_task) {
       // measure time outside to prevent incorrect times while in execution
       struct timespec end;
       clock_gettime(CLOCK_MONOTONIC, &end);
       thread_info->time_spend_idle += (end.tv_sec - begin.tv_sec) + (end.tv_nsec - begin.tv_nsec) / 1000000000.0;
-      (*next_task->routine)(next_task->args);
-      --thread_info->pool->task_group_states[next_task->group_id].task_count;
+      __execute_task(thread_info->pool, next_task);
       clock_gettime(CLOCK_MONOTONIC, &begin);
     }
 
@@ -162,8 +177,8 @@ void *__thread_main(void* args) {
     }
 
 
-    if(!next_task)
-      nanosleep(&waiting_time_start, &waiting_time_end);
+//    if(!next_task)
+//      nanosleep(&waiting_time_start, &waiting_time_end);
 	}
 
   thread_info->status = thread_status_finished;
@@ -204,11 +219,8 @@ status_e __check_for_thread_tasks(thread_pool* pool, size_t id) {
 //  return status_ok;
 //}
 
-thread_task* __get_next_task(thread_pool *pool, size_t thread_id) {
+thread_task* __get_next_task(thread_pool *pool) {
   thread_task* next_task = priority_queue_pop(pool->waiting_tasks);
-  if(next_task)
-    pool->thread_tasks[thread_id] = next_task;
-  
   return next_task;
 }
 
@@ -220,6 +232,12 @@ status_e __create_thread(__thread_information* thread_info, pthread_t* pp){
   return status_ok;
 }
 
+
+void __execute_task(thread_pool* pool, thread_task* task)
+{
+  (*task->routine)(task->args);
+  --pool->task_group_states[task->group_id].task_count;
+}
 
 thread_status_e __update_thread_status(thread_pool* pool, size_t thread_id, thread_status_e thread_status) {
   // Check if free is called on the thread pool and tell the thread to finish
