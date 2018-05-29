@@ -1,6 +1,7 @@
 #include "thread_pool.h"
 #include <stdlib.h>
 #include <string.h>
+#include <stdio.h>
 
 static inline void __execute_task();
 
@@ -9,13 +10,14 @@ static inline void __execute_task();
 //
 
 thread_pool* thread_pool_create(size_t num_threads) {
-   thread_pool* pool = malloc(sizeof(thread_pool));
-   pool->size = num_threads;
-   pool->capacity = num_threads * 2;
-   pool->waiting_tasks = calloc(1, sizeof(priority_queue_t));
+  thread_pool* pool = malloc(sizeof(thread_pool));
+  pool->name = NULL;
+  pool->size = num_threads;
+  pool->capacity = num_threads * 2;
+  pool->waiting_tasks = calloc(1, sizeof(priority_queue_t));
 //   pool->thread_status = malloc(sizeof(thread_status_e) * num_threads);
-   pool->thread_tasks = calloc(num_threads, sizeof(thread_task*));
-   pool->thread_infos = malloc(sizeof(__thread_information*) * pool->capacity);
+  pool->thread_tasks = calloc(num_threads, sizeof(thread_task*));
+  pool->thread_infos = malloc(sizeof(__thread_information*) * pool->capacity);
 
   pool->task_state_capacity = 4096;
   pool->task_group_states = calloc(pool->task_state_capacity, sizeof(__task_state));
@@ -30,6 +32,7 @@ thread_pool* thread_pool_create(size_t num_threads) {
     thread_info->pool = pool;
     thread_info->id = i;
     thread_info->status = thread_status_empty;
+    sprintf(thread_info->name, "worker%I64d", i);
   }
   for(size_t i = 0; i < num_threads; ++i)
     __create_thread(pool->thread_infos[i], &pool->pool[i]);
@@ -56,7 +59,16 @@ void thread_pool_free(thread_pool* pool) {
     free(pool->thread_tasks);
     free(pool->thread_infos);
     free(pool->task_group_states);
+    if(pool->name) free(pool->name);
     free(pool);
+}
+
+void thread_pool_set_name(thread_pool* pool, const char* name){
+  if(pool->name) free(pool->name);
+  size_t s = strlen(name);
+  char* str = malloc(s+1);
+  strcpy(str, name);
+  pool->name = str;
 }
 
 status_e thread_pool_resize(thread_pool* pool, size_t num_threads)
@@ -85,7 +97,7 @@ status_e thread_pool_resize(thread_pool* pool, size_t num_threads)
 	return status_ok;
 }
 
-status_e gecko_pool_enqueue_tasks(thread_task* tasks, thread_pool* pool, size_t num_tasks, task_handle* hndl) {
+status_e thread_pool_enqueue_tasks(thread_task* tasks, thread_pool* pool, size_t num_tasks, task_handle* hndl) {
   
   // find unused slot
   size_t ind = 0;
@@ -109,8 +121,8 @@ status_e gecko_pool_enqueue_tasks(thread_task* tasks, thread_pool* pool, size_t 
   return status_ok;
 }
 
-status_e gecko_pool_enqueue_task(thread_task* task, thread_pool* pool, task_handle* hndl) {
-  return gecko_pool_enqueue_tasks(task, pool, 1, hndl);
+status_e thread_pool_enqueue_task(thread_task* task, thread_pool* pool, task_handle* hndl) {
+  return thread_pool_enqueue_tasks(task, pool, 1, hndl);
 }
 
 status_e thread_pool_wait_for_task(thread_pool* pool, task_handle* hndl) {
