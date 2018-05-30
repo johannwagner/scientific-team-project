@@ -32,12 +32,23 @@ thread_pool* thread_pool_create(size_t num_threads) {
     thread_info->pool = pool;
     thread_info->id = i;
     thread_info->status = thread_status_empty;
-    sprintf(thread_info->name, "worker%I64d", i);
+    sprintf(thread_info->name, "worker-%zu", i); // "worker%I64d" lead to segfault on linux
+    
   }
   for(size_t i = 0; i < num_threads; ++i)
     __create_thread(pool->thread_infos[i], &pool->pool[i]);
 
    return pool;
+}
+
+thread_pool* thread_pool_create_named(size_t num_threads, const char* name) {
+  thread_pool* pool = thread_pool_create(num_threads);
+
+  if(name) {
+    thread_pool_set_name(pool, name);
+  }
+
+  return pool;
 }
 
 void thread_pool_free(thread_pool* pool) {

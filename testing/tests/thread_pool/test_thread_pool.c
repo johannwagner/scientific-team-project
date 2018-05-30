@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include "../../../include/thread_pool.h"
 
-// Test the creatrion of thread pools
+// Test the creation of thread pools
 START_TEST(thread_pool_create_) 
 {
     thread_pool* pool = thread_pool_create(2);
@@ -13,10 +13,21 @@ START_TEST(thread_pool_create_)
 }
 END_TEST
 
+// Test the naming of thread pools
+START_TEST(thread_pool_name) 
+{
+    thread_pool* pool = thread_pool_create_named(2, "ThreadPool");
+    ck_assert(pool);
+    ck_assert_str_eq(pool->name, "ThreadPool");
+
+    thread_pool_free(pool);
+    
+}
+END_TEST
+
 void work(void* args)
 {
 	int* res = args;
-    printf("Work %p\n", res);
 	for(; *res > 0; (*res)--)
     {
         
@@ -36,15 +47,14 @@ START_TEST(thread_pool_tasks){
         test_task->args = (void*)&test[i];
         test_task->routine = work;
 
-        //std::cout << "enqueueing " << i << std::endl;
-        gecko_pool_enqueue_task(test_task, pool, &hndl);
-        thread_pool_wait_for_task(pool, &hndl);
-        //std::cout << "enqueued " << i << std::endl;
+        thread_pool_enqueue_task(test_task, pool, &hndl);
     }
+
+    thread_pool_wait_for_all(pool);
 
     for(int i = 0; i < 6; i++){
         //printf("%d\n", test[i]);
-        ck_assert_int_eq(test[0], 0);
+        ck_assert_int_eq(test[i], 0);
     }
     thread_pool_free(pool);
     
@@ -62,6 +72,7 @@ Suite * thread_pool_suite(void)
     tc_core = tcase_create("Core");
 
     tcase_add_test(tc_core, thread_pool_create_);
+    tcase_add_test(tc_core, thread_pool_name);
     tcase_add_test(tc_core, thread_pool_tasks);
 
     suite_add_tcase(s, tc_core);

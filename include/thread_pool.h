@@ -59,7 +59,7 @@ typedef struct thread_pool {
 } thread_pool;
 
 typedef struct __thread_information {
-	char name[10];
+	char name[16];
 	thread_pool* pool;
 	size_t id;
 	atomic_int status;
@@ -72,6 +72,7 @@ typedef struct __thread_information {
 //
 
 thread_pool* thread_pool_create(size_t num_threads);
+thread_pool* thread_pool_create_named(size_t num_threads, const char* name);
 // Releases all resources hold by the threadpool. 
 // Currently working threads may finish but tasks left in the queue will be discarded.
 void thread_pool_free(thread_pool* pool);
