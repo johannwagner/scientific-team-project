@@ -57,16 +57,17 @@ To overcome these drawbacks, we integrate an optimised thread pool in BOLSTER. A
 \end{itemize}
 We organized the rest of the paper as follows. In Section 2, we give preliminaries about the considered task configuration and about thread safe access of memory. In Section 3, we show our design and implementation of the thread pool and examine our experimental environment in Section 4. In Section 5, we describe the results of our performance evaluation. In Section 6, we name related work and state our conclusion and future work in Section 7.
 
-
-%\begin{itemize}
-%	\item We compare different adaptions of index structures to fulfill requirements of modern database systems
-%	\item We highlight the usage of SIMD and the cache line adaptions in all approaches
-%	\item We extract the important points of these adaptions and their performance impact on the index structures
-%\end{itemize}
-
-% Paper structure
-
 \section{Preliminaries}
+In this section, we define our configuration of tasks that are processed by the thread pool and state difficulties of synchronizing thread access to memory.
+
+\subsection{Task Configuration}
+We define a Task as a structure containing data that has to be processed and an operation that has to be executed on the data. In this work, we define tasks as \emph{independent}, which means tasks do not have dependencies on other tasks and can be processed independently. Furthermore, we expect the data passed to two tasks are stored in different memory locations. Consequently, while executing the task operation, threads do not access the same memory locations. Additionally, we only consider not preemtable tasks. Once a task is assigned to a thread, the thread will finish the operation of the task before getting a new one. 
+
+\subsection{Synchronizing Memory Access from Threads}
+Parallelism with multi threading works great as long as each thread works on a separate memory area. During task scheduling, the scheduler has to know the state each thread has. This can be solved with signal handling or by writing the current thread state into main memory. In this work, we implement the second approach to avoid having another thread that only schedules tasks to other threads. 
+
+Threadsafe access to memory can be achieved by different approaches. Firstly, a mutex thread can manage the access for multiple other threads. Secondly, atomic operations ensure the safe access from different threads to the same memory. Since using a mutex thread can decrease access performance, we decided to execute atomic operations on the memory containing the thread state informations. For example, the function \emph{atomic\_compare\_exchange\_strong} performs a compare and, if the result is true, an exchange of the memory in one atomic operation.
+
 %\begin{figure}
 %	\includegraphics[width=0.4\textwidth]{figure_1.png}
 %	\caption{Coherence between data, instructions, and the results of SISD and SIMD.}
@@ -93,6 +94,7 @@ We organized the rest of the paper as follows. In Section 2, we give preliminari
 %\end{table*}
 
 \section{Implementation}
+In this section, 
 
 \section{Experimental Environment}
 
