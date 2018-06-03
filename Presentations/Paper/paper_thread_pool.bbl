@@ -1,0 +1,8 @@
+\begin{thebibliography}{1}
+
+\bibitem{pyarali2001evaluating}
+Pyarali, I., Spivak, M., Cytron, R., Schmidt, D.C.:
+\newblock Evaluating and optimizing thread pool strategies for real-time corba.
+\newblock ACM SIGPLAN Notices \textbf{36}(8) (2001)  214--222
+
+\end{thebibliography}
