@@ -71,12 +71,14 @@ In this section, we define our configuration of tasks that are processed by the 
 \end{figure*}
 
 \subsection{Task Configuration}
-We define a Task as a structure containing data that has to be processed and an operation that has to be executed on the data. In this work, we define tasks as \emph{independent}, which means tasks do not have dependencies on other tasks and can be processed independently. Furthermore, we expect the data passed to two tasks are stored in different memory locations. Consequently, while executing the task operation, threads do not access the same memory locations. Additionally, we only consider not preemtable tasks. Once a task is assigned to a thread, the thread will finish the operation of the task before getting a new one. 
+We define a Task as a structure containing data that has to be processed and an operation that has to be executed on the data. In this work, we define tasks as \emph{independent}, which means tasks do not have dependencies on other tasks and can be processed independently. Furthermore, we expect the data passed to two tasks are stored in different memory locations. Consequently, while executing the task operation, threads do not access the same memory locations. 
+
+Each task can be enqueued with a priority. The priority zero is the highest and the task will be processed by the next free thread. The higher the priority of the task is, the further it is placed behind in the queue. Additionally, we only consider not preemtable tasks. Once a task is assigned to a thread, the thread will finish the operation of the task before getting a new one. 
 
 \subsection{Synchronizing Memory Access from Threads}
 Parallelism with multi threading works great as long as each thread works on a separate memory area. During task scheduling, the scheduler has to know the state each thread has. This can be solved with signal handling or by writing the current thread state into main memory. In this work, we implement the second approach to avoid having another thread that only schedules tasks to other threads. 
 
-Threadsafe access to memory can be achieved by different approaches. Firstly, a mutex thread can manage the access for multiple other threads. Secondly, atomic operations ensure the safe access from different threads to the same memory. Since using a mutex thread can decrease access performance, we decided to execute atomic operations on the memory containing the thread state informations. For example, the function \emph{atomic\_compare\_exchange\_strong} performs a compare and, if the result is true, an exchange of the memory in one atomic operation.
+Threadsafe access to memory can be achieved by different approaches. Firstly, a mutex thread can manage the access for multiple other threads. Secondly, atomic operations ensure the safe access from different threads to the same memory. We use both approaches for different parts of the thread pool. Since using a mutex thread can decrease access performance, we decided to execute atomic operations on the memory containing the thread state informations. For example, the function \emph{atomic\_compare\_exchange\_strong} performs a compare and, if the result is true, an exchange of the memory in one atomic operation. We use a mutex thread to synchronize the enqueueing of tasks into the priority queue.
 
 %\begin{figure}
 %	\includegraphics[width=0.4\textwidth]{figure_1.png}
@@ -107,9 +109,14 @@ Threadsafe access to memory can be achieved by different approaches. Firstly, a 
 In this section, we describe in detail the design and implementation of our thread pool. We show how tasks are enqueued regarding their priority and how the scheduling is implemented. Additionally, we state our thread metrics and how they are integrated in the thread pool design. 
 
 \subsection{Architecture of the Thread Pool}
-Compared to simply create threads on demand, managing threads in a pool comes along with memory and CPU overhead. 
+Compared to simply create threads on demand, managing threads in a pool comes along with memory and CPU overhead. The thread pool must know information about the state each thread has and his assigned task. To measure metrics of threads and tasks, additional memory for threads and tasks is required. 
 
+In Figure 1, we show our design of the whole thread pool system, containing the thread pool itself, the task priority queue and the performance monitoring. Since measuring performance metrics lead to memory and CPU overhead, we decided to exclude the performance measurements from the thread pool to make it optional. The performance monitoring can be activated with an additional function call of \textbf{TODO: Insert function here}. Consequently, in the target database system, the designers can decide for each thread pool instance, if performance monitoring should be applied. 
 
+The thread pool system includes an array of threads and a priority queue to store the passed tasks. We decided to implement the thread pool using the POSIX thread library to provide the thread pool for multiple operation systems like Linux and Unix. Additionally, we avoid using custom compiler flags to ensure that the thread pool can be compiled with different compilers. The thread pool itself contains a variable number of threads. Since XY and XZ show the importance of accurate thread pool size, we add a resizing function for our thread pool, which enables to change the amount of threads at runtime. 
+
+\subsection{Thread Pool and Task Queue}
+Threads and tasks are two major entities in the thread pool system. As we can observe from Figure 1, thread pool and task queue are two data structures used to store the required information related to the threads and the submitted tasks, respectively. Each spawned thread can be either working on a task or waiting for the next task. Consequently, we define the states of a thread to \emph{busy} and \emph{waiting}. 
 
 \subsection{Enqueueing Tasks}
 \begin{figure}
@@ -125,6 +132,10 @@ Compared to simply create threads on demand, managing threads in a pool comes al
 	\label{fig2}
 \end{figure}
 As mentioned in the previous section, ids are assigned to the tasks before they are enqueued. 
+
+\subsection{Managing Thread States}
+- To handle the shrinkage of the pool while threads are processing tasks, we change the state
+
 \subsection{Thread metrics}
 
 \section{Experimental Environment}
