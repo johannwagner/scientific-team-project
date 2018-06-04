@@ -136,6 +136,18 @@ status_e thread_pool_enqueue_task(thread_task* task, thread_pool* pool, task_han
   return thread_pool_enqueue_tasks(task, pool, 1, hndl);
 }
 
+status_e thread_pool_enqueue_tasks_wait(thread_task* tasks, thread_pool* pool, size_t num_tasks) {
+  // Pass all tasks except the last one to the queue
+  task_handle hndl;
+  thread_pool_enqueue_tasks(tasks, pool, num_tasks - 1, &hndl);
+
+  // Execute the last tasks in the calling thread
+  thread_task* main_task = &tasks[num_tasks - 1];
+  (*main_task->routine)(main_task->args);
+
+  return thread_pool_wait_for_task(pool, &hndl);
+}
+
 status_e thread_pool_wait_for_task(thread_pool* pool, task_handle* hndl) {
   volatile unsigned* gen = &pool->task_group_states[hndl->index].generation;
   while(*gen == hndl->generation 
@@ -259,7 +271,7 @@ status_e __create_thread(__thread_information* thread_info, pthread_t* pp){
 void __execute_task(thread_pool* pool, thread_task* task)
 {
   (*task->routine)(task->args);
-  --pool->task_group_states[task->group_id].task_count;
+    --pool->task_group_states[task->group_id].task_count;
 }
 
 thread_status_e __update_thread_status(thread_pool* pool, size_t thread_id, thread_status_e thread_status) {
