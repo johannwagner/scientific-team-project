@@ -64,6 +64,12 @@ We organized the rest of the paper as follows. In Section 2, we give preliminari
 \section{Preliminaries}
 In this section, we define our configuration of tasks that are processed by the thread pool and state difficulties of synchronizing thread access to memory.
 
+\begin{figure*}[htbp]
+	\includegraphics[width=1.0\textwidth]{img/pool_structure.png}
+	\caption{Design of the thread pool system}
+	\label{fig0}
+\end{figure*}
+
 \subsection{Task Configuration}
 We define a Task as a structure containing data that has to be processed and an operation that has to be executed on the data. In this work, we define tasks as \emph{independent}, which means tasks do not have dependencies on other tasks and can be processed independently. Furthermore, we expect the data passed to two tasks are stored in different memory locations. Consequently, while executing the task operation, threads do not access the same memory locations. Additionally, we only consider not preemtable tasks. Once a task is assigned to a thread, the thread will finish the operation of the task before getting a new one. 
 
@@ -109,10 +115,15 @@ Compared to simply create threads on demand, managing threads in a pool comes al
 \begin{figure}
 	\includegraphics[width=0.5\textwidth]{img/pool_queue.png}
 	\caption{Workflow of task enqueueing and execution in the thread pool}
-	\label{fig}
+	\label{fig1}
 \end{figure}
 
 \subsection{Waiting for Tasks}
+\begin{figure}
+	\includegraphics[width=0.5\textwidth]{img/waitingconcept.png}
+	\caption{Concept of waiting for tasks using a slotmap}
+	\label{fig2}
+\end{figure}
 As mentioned in the previous section, ids are assigned to the tasks before they are enqueued. 
 \subsection{Thread metrics}
 
@@ -123,7 +134,7 @@ As mentioned in the previous section, ids are assigned to the tasks before they 
 \section{Related Work}
 
 \section{Conclusion and Future Work}
-
+\cite{pyarali2001evaluating}
 \bibliographystyle{splncs}
 \bibliography{paper_thread_pool} 
 
