@@ -40,7 +40,7 @@ if (UNIX)
         add_executable(gecko_thread_pool_tests
                 ${SOURCE_FILES}
                 ${TEST_FILES}
-                testing/tests/thread_pool/test_thread_pool.c
+                testing/test_runner.c
         )
 
         add_custom_target(tests

@@ -89,8 +89,13 @@ status_e thread_pool_resize(thread_pool* pool, size_t num_threads);
 status_e thread_pool_enqueue_tasks(thread_task* task, thread_pool* pool, size_t num_tasks, task_handle* hndl);
 status_e thread_pool_enqueue_task(thread_task* task, thread_pool* pool, task_handle* hndl);
 
+// Add multiple tasks to be executed. Waits until all passed tasks are finished. 
+// The main thread also participates in task execution
+status_e thread_pool_enqueue_tasks_wait(thread_task* task, thread_pool* pool, size_t num_tasks);
+
 // Waits until the tasks referenced by hndl are completed.
 status_e thread_pool_wait_for_task(thread_pool* pool, task_handle* hndl);
+
 // Waits until all tasks currently in the queue are executed.
 // The main thread also participates in task execution.
 status_e thread_pool_wait_for_all(thread_pool* pool);
