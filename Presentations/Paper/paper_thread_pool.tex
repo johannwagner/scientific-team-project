@@ -14,22 +14,26 @@
 \title{Thread Pool in GeckoDB/BOLSTER - Integrating a Thread Pool into a high performance Database System \\
 }
 
-\author{\IEEEauthorblockN{Marten Wallewein-Eising}
-	\IEEEauthorblockA{\textit{Otto-von-Guericke University} \\
-	Magdeburg, Germany \\
-	marten.wallewein-eising@st.ovgu.de}\and
+\author{
 	\IEEEauthorblockN{Robert Jendersie}
 	\IEEEauthorblockA{\textit{Otto-von-Guericke University} \\
 		Magdeburg, Germany \\
-		robert.jendersie@ovgu.de}\and
+		robert.jendersie@ovgu.de} \and
+
 	\IEEEauthorblockN{Johannes Wuensche}
 	\IEEEauthorblockA{\textit{Otto-von-Guericke University} \\
 	Magdeburg, Germany \\
-	johannes.wuensche@st.ovgu.de}\and
+	johannes.wuensche@st.ovgu.de} \and
+
 	\IEEEauthorblockN{Johann Wagner}
 	\IEEEauthorblockA{\textit{Otto-von-Guericke University} \\
 	Magdeburg, Germany \\
-	johann.wagner@st.ovgu.de}
+	johann.wagner@st.ovgu.de} \and
+
+	\IEEEauthorblockN{Marten Wallewein-Eising}
+	\IEEEauthorblockA{\textit{Otto-von-Guericke University} \\
+	Magdeburg, Germany \\
+	marten.wallewein-eising@st.ovgu.de}
 }
 
 
@@ -94,7 +98,23 @@ Threadsafe access to memory can be achieved by different approaches. Firstly, a 
 %\end{table*}
 
 \section{Implementation}
-In this section, 
+In this section, we describe in detail the design and implementation of our thread pool. We show how tasks are enqueued regarding their priority and how the scheduling is implemented. Additionally, we state our thread metrics and how they are integrated in the thread pool design. 
+
+\subsection{Architecture of the Thread Pool}
+Compared to simply create threads on demand, managing threads in a pool comes along with memory and CPU overhead. 
+
+
+
+\subsection{Enqueueing Tasks}
+\begin{figure}
+	\includegraphics[width=0.5\textwidth]{img/pool_queue.png}
+	\caption{Workflow of task enqueueing and execution in the thread pool}
+	\label{fig}
+\end{figure}
+
+\subsection{Waiting for Tasks}
+As mentioned in the previous section, ids are assigned to the tasks before they are enqueued. 
+\subsection{Thread metrics}
 
 \section{Experimental Environment}
 
