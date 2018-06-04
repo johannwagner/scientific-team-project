@@ -1,0 +1,86 @@
+Introduction:
+- Thread-per-request vs thread pool
+-> The thread per- request model spawns a thread for each request, and destroys the thread after finishing the request. In contrast, a thread pool system spawns and maintains a pool of threads. When a request arrives, the application uses a free thread in the pool to serve a client request, and returns the thread to the pool after finishing the request.
+
+- Current Situation:
+	-> Bolster/GeckoDB
+	-> Thread per request
+	-> high overhead spawning threads, no management overhead
+	-> Debugging/Profiling
+
+- Thread pool size:
+	-> Too small, tasks have to wait too long
+	-> too big, too many idling threads
+	-> We give the possibility to resize the amount of threads at runtime
+	
+Related Work:
+Xu et al: Performance Study and Dynamic Optimization Design for Thread Pool Systems
+	-> Thread Pool Design
+	-> Dynamic resizing based on average idle time
+
+Ling et al: Analysis of Optimal Thread Pool Size
+	-> Represent thread pool size as mathematical problem
+	-> Calculate the costs of different thread pool sizes
+	-> determine the optimal size of thread pools maximizing the gain of each thread
+	
+Pyarali et al: Evaluating and Optimizing Thread Pool Strategies for Real-Time CORBA
+	-> Show different thread pool strategies
+	-> Determine problems of the strategies and present solutions
+	
+Preliminaries:
+
+- Task description
+	-> Not preamtable
+	-> Priorized tasks
+	-> Independend Taks
+	-> Task states
+- Priority based queueing
+- Thread safe variable access
+	
+Implementation:
+- Design of the Pool
+
+Modules:
+• Priority Task queue
+• Thread scheduling
+• Performance monitoring
+
+- Entities: Task, thread_info, 
+- Design of priority queue and tasks
+- Enqueueing Tasks
+- Thread safe waiting for Tasks
+	-> Slotmap
+- Test implementation
+
+Performance monitoring:
+	-> Extra c file, Methdos:
+		- start_performance_measure(pool)
+	-> Pool, task and thread statistics 
+
+Experimental Environment
+- Design of Benchmarks
+	-> Test lib
+	-> Integration in BOLSTER
+
+Experimental Configuration
+	- Linux and MacOS?
+
+- Passive vs active Scheduling
+
+Performance metrics ?
+
+Results
+ 
+Future Work:
+- Resizing based on experience or other metrics
+	-> Time consuming, 
+	-> The performance monitoring job is very time-consuming and inconvenient for a system administer. In addition, the configuration drawn up through this approach is often inaccurate, especially when the performance varies a lot over time.
+	
+- Test different scheduling approaches and measure performance
+
+References:
+- Pthreads Programming
+- Performance Study and Dynamic Optimization Design for Thread Pool Systems
+- Analysis of Optimal Thread Pool Size
+- Evaluating and Optimizing Thread Pool Strategies for Real-Time CORBA
+- Threading in C# 
