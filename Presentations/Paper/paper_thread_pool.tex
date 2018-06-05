@@ -165,9 +165,10 @@ Collecting statistics about the time tasks spend in the priority queue or during
 	\end{center}
 \end{table}
 
-How long a task waits in the queue before being executed is a good metric to adjust task priority or the thread pool size. For example, if an enqueued task with priority 0 still has a large difference between \emph{enqueue\_time} and \emph{execution\_time}, the thread pool size may be too small. In section 6, we state related work that covers the dynamic resizing of thread pools. 
+How long a task waits in the queue before being executed is a good metric to adjust task priority or the thread pool size. For example, if an enqueued task with priority 0 still has a large difference between \emph{enqueue\_time} and \emph{execution\_time}, the thread pool size may be too small. Otherwise, if a large number of tasks without high priority have small differences between \emph{enqueue\_time} and \emph{execution\_time}, this may indicate that the thread pool size is too large. A better indicator of not optimized thread pool sizes are statistics per thread.
 
 \subsubsection{Thread Statistics}
+As mentioned before, adjusting the thread pool size based on task statistics may not be very precise. Consequently, collecting statistics per thread is necessary for a good evaluation of the relation between tasks and threads. In Table \ref{tab3}, we show our statistics collected for each thread in a thread pool instance. 
 
 \begin{table}[htbp]
 	\caption{Thread statistics with their internal names and descriptions}
@@ -185,7 +186,10 @@ How long a task waits in the queue before being executed is a good metric to adj
 	\end{center}
 \end{table}
 
+The \emph{busy\_time} of a thread strongly depends on the executed tasks and therefor is a metric that gives less information about the thread pool itself. In contrast, the \emph{waiting\_time} is a good indicator to reveal less used threads in the thread pool to determine an optimal amount of threads for the current use case. Furthermore, the \emph{task\_count} of thread compared to the number of tasks processed by the thread pool indicates the degree of usage of the thread. To give further possibilities for optimizing the thread pool, we collect statistics for each thread pool instance.
+
 \subsubsection{Thread Pool Statistics}
+To consider the thread pool instance, an important metric is the average waiting time of tasks. In order to optimize the thread pool size, a balanced relation between the waiting time of tasks and the number of threads must be found. Furthermore, at a specific time, the relation between enqueued and completed tasks can be interesting. In Table \ref{tab4}, we show our statistics collected for each thread pool instance.
 
 \begin{table}[htbp]
 	\caption{Thread pool statistics with their internal names and descriptions}
@@ -197,13 +201,16 @@ How long a task waits in the queue before being executed is a good metric to adj
 			working\_time & Time the thread pool runs (ms) \\
 			task\_complete\_count & Number of tasks the thread pool has completed\\
 			task\_enqueued\_count & Number of tasks the thread pool has enqueued \\
-			avg\_task\_time & Average time span from enqueueing until \\
+			avg\_complete\_time & Average time span from enqueueing until \\
 			& execution of tasks \\
+			avg\_wait\_time & Average time of tasks spend in the queue \\
 			\hline
 		\end{tabular}
 		\label{tab4}
 	\end{center}
 \end{table}
+
+We will use these statistics to adapt our thread pool implementation to different use cases later on. In the next sections, we define our experimental environment, the implementation of our tests including the measured metrics and the test results.
 
 \section{Experimental Environment}
 
