@@ -139,11 +139,71 @@ To clarify the procedure of the waiting algorithm, we consider the second slot i
 	\label{fig2}
 \end{figure}
 
-
 \subsection{Managing Thread States}
+TODO: Remove this subsection? \\
 - To handle the shrinkage of the pool while threads are processing tasks, we change the state
 
-\subsection{Thread metrics}
+\subsection{Performance monitoring}
+The performance monitoring component of the thread pool system is responsible for collecting data about threads, tasks, and the whole thread pool system. We will use the information collected in this component for analysis and performance optimization in later stages. As mentioned before, the performance monitoring is an optional component, since evaluating the following statistics can reduce the execution performance of our thread pool. Collecting statistics can be activated to a specific thread pool instance by calling the function \emph{thread\_pool\_statistics\_start}. We divide the collected statistics into the sections \emph{task statistics}, \emph{thread statistics}, and \emph{thread pool statistics}.
+
+\subsubsection{Task Statistics}
+Collecting statistics about the time tasks spend in the priority queue or during the execution is useful to tune the thread pool configuration for better performance results. In Table \ref{tab2} we show the statistics that are collected for each task. 
+
+\begin{table}[htbp]
+	\caption{Task statistics with their internal names and descriptions}
+	\begin{center}
+		\begin{tabular}{ c c }
+			\hline
+			\textbf{Statistic name}&\textbf{Description}\\
+			\hline
+			enqueue\_time & Time when the task was enqueued \\
+			execution\_time & Time when the task execution begins \\
+			complete\_time & Time when the task execution is finished \\
+			\hline
+		\end{tabular}
+		\label{tab2}
+	\end{center}
+\end{table}
+
+How long a task waits in the queue before being executed is a good metric to adjust task priority or the thread pool size. For example, if an enqueued task with priority 0 still has a large difference between \emph{enqueue\_time} and \emph{execution\_time}, the thread pool size may be too small. In section 6, we state related work that covers the dynamic resizing of thread pools. 
+
+\subsubsection{Thread Statistics}
+
+\begin{table}[htbp]
+	\caption{Thread statistics with their internal names and descriptions}
+	\begin{center}
+		\begin{tabular}{ c c }
+			\hline
+			\textbf{Statistic name}&\textbf{Description}\\
+			\hline
+			waiting\_time & Time the thread spend waiting (ms) \\
+			busy\_time & Time the thread spend executing tasks (ms)\\
+			task\_count & Number of tasks the thread has executed \\
+			\hline
+		\end{tabular}
+		\label{tab3}
+	\end{center}
+\end{table}
+
+\subsubsection{Thread Pool Statistics}
+
+\begin{table}[htbp]
+	\caption{Thread pool statistics with their internal names and descriptions}
+	\begin{center}
+		\begin{tabular}{ c c }
+			\hline
+			\textbf{Statistic name}&\textbf{Description}\\
+			\hline
+			working\_time & Time the thread pool runs (ms) \\
+			task\_complete\_count & Number of tasks the thread pool has completed\\
+			task\_enqueued\_count & Number of tasks the thread pool has enqueued \\
+			avg\_task\_time & Average time span from enqueueing until \\
+			& execution of tasks \\
+			\hline
+		\end{tabular}
+		\label{tab4}
+	\end{center}
+\end{table}
 
 \section{Experimental Environment}
 
