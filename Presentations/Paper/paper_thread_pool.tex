@@ -80,31 +80,6 @@ Parallelism with multi threading works great as long as each thread works on a s
 
 Threadsafe access to memory can be achieved by different approaches. Firstly, a mutex thread can manage the access for multiple other threads. Secondly, atomic operations ensure the safe access from different threads to the same memory. We use both approaches for different parts of the thread pool. Since using a mutex thread can decrease access performance, we decided to execute atomic operations on the memory containing the thread state informations. For example, the function \emph{atomic\_compare\_exchange\_strong} performs a compare and, if the result is true, an exchange of the memory in one atomic operation. We use a mutex thread to synchronize the enqueueing of tasks into the priority queue.
 
-%\begin{figure}
-%	\includegraphics[width=0.4\textwidth]{figure_1.png}
-%	\caption{Coherence between data, instructions, and the results of SISD and SIMD.}
-%	\label{fig}
-%\end{figure}
-% SIMD explanation
-
-%\begin{table*}[htbp]
-%	\caption{SIMD instructions from Streaming SIMD Extensions 2 (SSE2)}
-%	\begin{center}
-%		\begin{tabular}{|c|c|}
-%			\hline
-%			\textbf{SIMD instruction}&\textbf{Explanation}\\
-%			\hline
-%			\_\_m128i \_mm\_load\_si128 (\_\_m128i *p) & Loads a 128-bit value. Returns the value loaded into a variable representing a register.\\
-%			\_\_m128i \_mm\_cmpgt\_epi32 (\_\_m128i a, \_\_m128i b) & Compares 4 signed 32-bit integers in a and 4 signed 32-bit integers
-%			in b for greater-than.\\
-%			\_\_m128i \_mm\_set1\_epi32(int i) & Sets the four signed 32-bit integer values to i.\\
-%			\hline
-%		\end{tabular}
-%		\label{tab1}
-%	\end{center}
-%
-%\end{table*}
-
 \section{Implementation}
 In this section, we describe in detail the design and implementation of our thread pool. We show how tasks are enqueued regarding their priority and how the scheduling is implemented. Additionally, we state our thread metrics and how they are integrated in the thread pool design. 
 
@@ -152,6 +127,11 @@ The third step is only executed if the tasks refer to a valid handle and waiting
 \end{figure}
 
 \subsection{Waiting for Tasks}
+As mentioned before, the thread pool provides the functionality to let the calling function participate in the task execution and wait until all passed tasks are processed. To wait for a set of tasks, it is not sufficient to look firstly in the priority queue for the tasks and then in the state of the thread pool, since popping tasks out of the queue is not an atomic operation. Consequently, tasks can have a state between being enqueued in the queue and being executed by a thread. 
+
+To solve this problem, we implement the waiting for a set of tasks using a slotmap. In Figure 3, we show the concept of our slotmap. During the enqueueing process of tasks, a set of tasks are referred to a slot in the slotmap. Each slot contains a number of open tasks to be finished and a generation counter. We name the number of open task \emph{openTaskCount} and the generation counter \emph{genCount}. Every time a set of tasks is enqueued, a slot with $openTaskCount = 0$ and the \emph{genCount} is increases. Every time a thread finishes a task, the openTaskCount of the referred slot is decreased. As mentioned before, multiple tasks can refer to a single handle. This handle also refers to a slot and has additionally assigned a generation value. The waiting algorithm loops over the following conditions before returning to the calling function: It checks if the number of open tasks is zero or if the generation counter of this slot has changed. If one of these conditions is true, the waiting algorithm returns to the calling function.
+
+To clarify the procedure of the waiting algorithm, we consider the second slot in Figure 3. The tasks $10, 12, $ and $13$ as well has the first handle refer to this slot. Consequently, these tasks were enqueued referring to the first handle. Before any of the three tasks is processed, the slot has the following state: $openTaskCount = 3$ and $genCount =  2$. Since the waiting thread does not know when tasks are executed due to the asynchronous behaviour, the waiting algorithm starts looping as long as the following condition is true: $openTaskCount \neq 0$ \&\& $genCount = 2$. For each finished task, $openTaskCount$ is decreased. It is not sufficient to check only $openTaskCount \neq 0$, since the slot can be reused before the waiting algorithms noticed that $openTaskCount = 0$. Consequently, we check if the slot stays on the same generation. If the slot is reused, $genCount$ increases and the second part of the condition returns false.
 
 \begin{figure}
 	\includegraphics[width=0.4\textwidth]{img/waitingconcept.png}
