@@ -12,7 +12,7 @@
 #include "status.h"
 #include "priority_queue.h"
 #include "thread_status.h"
-#include <time.h>
+#include "thread_pool_statistics.h"
 
 //
 //	GLOBAL VARIABLES
@@ -30,6 +30,7 @@ typedef struct thread_task {
 	task_routine routine;
 	size_t group_id;
 	size_t priority;
+	task_stats* statistics; 
 } thread_task;
 
 struct __thread_information;
@@ -56,23 +57,25 @@ typedef struct thread_pool {
 //    thread_status_e* thread_status;
 	struct __thread_information** thread_infos;
 	thread_task** thread_tasks;
+	thread_pool_stats* statistics; 
 } thread_pool;
 
 typedef struct __thread_information {
-	char name[16];
+	char name[12];
 	thread_pool* pool;
 	size_t id;
 	atomic_int status;
 	struct timespec creation_time;
 	double time_spend_idle; // actually the time not spend directly executing a task
+	thread_stats* statistics;
 } __thread_information;
 
 //
 //	EXTERNAL METHODS
 //
 
-thread_pool* thread_pool_create(size_t num_threads);
-thread_pool* thread_pool_create_named(size_t num_threads, const char* name);
+thread_pool* thread_pool_create(size_t num_threads, int enable_monitoring);
+thread_pool* thread_pool_create_named(size_t num_threads, const char* name, int enable_monitoring);
 // Releases all resources hold by the threadpool. 
 // Currently working threads may finish but tasks left in the queue will be discarded.
 void thread_pool_free(thread_pool* pool);
@@ -100,8 +103,6 @@ status_e thread_pool_wait_for_task(thread_pool* pool, task_handle* hndl);
 // The main thread also participates in task execution.
 status_e thread_pool_wait_for_all(thread_pool* pool);
 
-// Returns the average fraction of time the active threads have been working.
-double thread_pool_get_time_working(thread_pool* pool);
 //
 //	INTERNAL METHODS
 //
