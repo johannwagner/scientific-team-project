@@ -20,7 +20,8 @@ find_package (Threads)
 file(GLOB_RECURSE SOURCE_FILES "include/*.h" "src/*.c")
 list(REMOVE_ITEM SOURCE_FILES ${CMAKE_CURRENT_SOURCE_DIR}/src/main.c)
 
-file(GLOB_RECURSE TEST_FILES "testing/*.c")
+#file(GLOB_RECURSE TEST_FILES "testing/*.c")
+file(GLOB_RECURSE TEST_FILES "testing/*.hpp")
 
 add_executable(gecko_thread_pool 
         ${SOURCE_FILES}
@@ -30,17 +31,17 @@ target_link_libraries (gecko_thread_pool ${CMAKE_THREAD_LIBS_INIT})
 target_link_libraries (gecko_thread_pool m)
 
 if (UNIX) 
-        find_package(Check REQUIRED)
-        #SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -pthread -lcheck")
-        #include_directories("/usr/local/include")
+        #find_package(Check REQUIRED)
+        SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -pthread -lcheck")
+        include_directories("/usr/local/include")
 
-        include_directories(${CHECK_INCLUDE_DIRS})
-        link_directories(${CHECK_LIBRARY_DIRS})
+        #include_directories(${CHECK_INCLUDE_DIRS})
+        #link_directories(${CHECK_LIBRARY_DIRS})
 
         add_executable(gecko_thread_pool_tests
                 ${SOURCE_FILES}
                 ${TEST_FILES}
-                testing/test_runner.c
+                testing/test_runner.cpp
         )
 
         add_custom_target(tests
@@ -49,7 +50,8 @@ if (UNIX)
 
         target_link_libraries (gecko_thread_pool_tests ${CMAKE_THREAD_LIBS_INIT})
         target_link_libraries (gecko_thread_pool_tests m)
-        target_link_libraries(gecko_thread_pool_tests ${CHECK_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
-        
+        #target_link_libraries(gecko_thread_pool_tests ${CHECK_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
+        target_link_libraries (gecko_thread_pool_tests /usr/local/lib/libgtest.a)
+
         #target_link_libraries (gecko_thread_pool_tests /usr/lib/x86_64-linux-gnu/libcheck.a)
 endif (UNIX)
