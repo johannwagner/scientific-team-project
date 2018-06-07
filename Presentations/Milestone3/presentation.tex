@@ -92,7 +92,10 @@
 
 \begin{frame}
 	\frametitle{Open issues}
-
+	\begin{itemize}
+		\item gtest still has some problems due to itself being implemented in C++
+		\item some race condition may still occur
+	\end{itemize}
 \end{frame}
 
 \section{Evaluation Setup}
@@ -100,6 +103,72 @@
 	\begin{center}
 		\huge Evaluation Setup
 	\end{center}
+\end{frame}
+
+\begin{frame}
+	\frametitle{Task Statistics}
+	\begin{center}
+		\begin{tabular}{ c c }
+			\hline
+			\textbf{Statistic name}&\textbf{Description}\\
+			\hline
+			enqueue\_time & Time when the task was enqueued \\
+			execution\_time & Time when the task execution begins \\
+			complete\_time & Time when the task execution is finished \\
+			\hline
+		\end{tabular}
+		\label{tab2}
+	\end{center}
+\end{frame}
+
+\begin{frame}
+	\frametitle{Thread Statistics}
+	\begin{center}
+		\begin{tabular}{ c c }
+			\hline
+			\textbf{Statistic name}&\textbf{Description}\\
+			\hline
+			waiting\_time & Time the thread spend waiting (ms) \\
+			busy\_time & Time the thread spend executing tasks (ms)\\
+			task\_count & Number of tasks the thread has executed \\
+			\hline
+		\end{tabular}
+		\label{tab3}
+	\end{center}
+\end{frame}
+
+\begin{frame}
+	\frametitle{Thread Pool Statistics}
+	\begin{center}
+		\begin{tabular}{ c c }
+			\hline
+			\textbf{Statistic name}&\textbf{Description}\\
+			\hline
+			working\_time & Time the thread pool runs (ms) \\
+			task\_complete\_count & Number of completed tasks \\
+			task\_enqueued\_count & Number of enqueued tasks \\
+			avg\_complete\_time & Average time span from enqueueing until \\
+			& execution of tasks \\
+			avg\_wait\_time & Average time of tasks spend in the queue \\
+			\hline
+		\end{tabular}
+		\label{tab4}
+	\end{center}
+\end{frame}
+
+\section{Paper Progress}
+\begin{frame}
+	\begin{center}
+	\huge Paper Progress \normalsize	
+	\end{center}
+\end{frame}
+
+\begin{frame}
+	\begin{itemize}
+		\item Introduction and Preliminaries mostly completed
+		\item Implementation described, including our used concepts and basic ideas how to build and operate the pool
+		\item Still required is the Evaluation(since we still need to perform it), the description of our testing environment and our final conclusion
+	\end{itemize}
 \end{frame}
 
 \begin{frame}
