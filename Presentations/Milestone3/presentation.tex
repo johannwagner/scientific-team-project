@@ -86,15 +86,16 @@
 		\item Implemented task enqueueing and execution
 		\item Implemented performance monitoring as external component
 		\item Added gtest framework to project and wrote tests for pool and queue
-		\item Started writing performance tests and measures for comparison against baseline ???
+		\item Started writing performance tests and measures for comparison against baseline
 	\end{itemize}
 \end{frame}
 
 \begin{frame}
 	\frametitle{Open issues}
 	\begin{itemize}
-		\item gtest still has some problems due to itself being implemented in C++
-		\item some race condition may still occur
+		\item GTest still has some problems with c atomics due to itself being implemented in C++
+		\item Some race condition may still occur
+		\item Check for memory leaks using valgrind
 	\end{itemize}
 \end{frame}
 
@@ -103,6 +104,15 @@
 	\begin{center}
 		\huge Evaluation Setup
 	\end{center}
+\end{frame}
+
+\begin{frame}
+	\frametitle{Evaluation Setup}
+	\begin{itemize}
+		\item Use of geckodb to stress test the thread pool by with BOLSTER primitives
+		\item Measure different statistics for tasks, thread and thread pools
+		\item Use statistics to determine optimal configurations for different thread pool instances
+	\end{itemize}
 \end{frame}
 
 \begin{frame}
@@ -119,6 +129,10 @@
 		\end{tabular}
 		\label{tab2}
 	\end{center}
+	\begin{itemize}
+		\item Minimize waiting time $(execution\_time - enqueue\_time)$
+		\item Evaluate the task setup considering the whole processing time 
+	\end{itemize}
 \end{frame}
 
 \begin{frame}
@@ -135,6 +149,10 @@
 		\end{tabular}
 		\label{tab3}
 	\end{center}
+	\begin{itemize}
+		\item $waiting\_time$ of threads indicate a good thread pool size
+		\item $task\_count$ interesting to number of all completed tasks
+	\end{itemize}
 \end{frame}
 
 \begin{frame}
@@ -154,6 +172,9 @@
 		\end{tabular}
 		\label{tab4}
 	\end{center}
+	\begin{itemize}
+		\item $avg\_wait\_time$ indicates the quality of the chosen thread pool size
+	\end{itemize}
 \end{frame}
 
 \section{Paper Progress}
