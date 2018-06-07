@@ -44,7 +44,6 @@ void work(void* args)
     }
 
     printf("%s\n", "Work finished");
-
 }
 
 void work_large(void* args)
