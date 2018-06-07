@@ -6,7 +6,7 @@
 // Test the creation of thread pools
 START_TEST(thread_pool_create_) 
 {
-    thread_pool* pool = thread_pool_create(2);
+    thread_pool* pool = thread_pool_create(2, 0);
     ck_assert(pool);
 
     thread_pool_free(pool);
@@ -17,7 +17,7 @@ END_TEST
 // Test the naming of thread pools
 START_TEST(thread_pool_name) 
 {
-    thread_pool* pool = thread_pool_create_named(2, "ThreadPool");
+    thread_pool* pool = thread_pool_create_named(2, "ThreadPool", 0);
     ck_assert(pool);
     ck_assert_str_eq(pool->name, "ThreadPool");
 
@@ -62,7 +62,7 @@ void work_large(void* args)
 
 START_TEST(thread_pool_tasks){
 
-    thread_pool* pool = thread_pool_create(2);
+    thread_pool* pool = thread_pool_create(2, 0);
     task_handle hndl;
 
     int test[] = {1000000, 1000000, 1000000, 1000000, 1000000, 1000000 };
@@ -90,7 +90,7 @@ END_TEST
 
 START_TEST(thread_pool_tasks_wait){
 
-    thread_pool* pool = thread_pool_create(2);
+    thread_pool* pool = thread_pool_create(2, 0);
 
     int test[] = {1000000, 1000000, 1000000, 1000000, 1000000, 1000000 };
     

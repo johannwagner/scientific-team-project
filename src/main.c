@@ -4,6 +4,7 @@
 #include <unistd.h>
 #include "priority_queue.h"
 #include "thread_pool.h"
+#include "thread_pool_monitoring.h"
 
 #define WORK_SIZE 40000
 #define NUM_TASKS 2048
@@ -34,7 +35,7 @@ void work(void* args)
 
 void resize_test()
 {
-	thread_pool* pool = thread_pool_create(2);
+	thread_pool* pool = thread_pool_create(2, 0);
 	task_handle hndl;
 	const int numThreads = 1 << 11;
 	thread_task tasks[numThreads];
@@ -77,8 +78,7 @@ void performance_test(int numThreads, int numTasks)
 	time /= 2048;
 	printf("time for one task: time: %f | %f\n", time, exp);
 
-
-	thread_pool* pool = thread_pool_create(numThreads);
+	thread_pool* pool = thread_pool_create(numThreads, 1);
 
 	double results[numTasks];
 	thread_task tasks[numTasks];
@@ -113,7 +113,7 @@ int main()
 		size_t i = (size_t)priority_queue_pop(&queue);
 		printf("%I64d\n",i);
 	}*/
-//	performance_test(2, 4000);
+	performance_test(2, 4000);
 	resize_test();
 
 	getchar();

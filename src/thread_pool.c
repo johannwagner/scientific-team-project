@@ -9,7 +9,7 @@ static inline void __execute_task();
 //  EXTERNAL METHODS
 //
 
-thread_pool* thread_pool_create(size_t num_threads) {
+thread_pool* thread_pool_create(size_t num_threads, int enable_monitoring) {
   thread_pool* pool = malloc(sizeof(thread_pool));
   pool->name = NULL;
   pool->size = num_threads;
@@ -25,6 +25,10 @@ thread_pool* thread_pool_create(size_t num_threads) {
    pthread_t* threads = malloc(sizeof(pthread_t) * pool->capacity);
    pool->pool = threads;
 
+   if(enable_monitoring) {
+     pool->statistics = malloc(sizeof(thread_pool_stats));
+   }
+
    for(size_t i = 0; i < pool->capacity; i++) {
     // one block per thread to reduce risk of two threads sharing the same cache line
     __thread_information* thread_info = malloc(sizeof(__thread_information));
@@ -33,6 +37,10 @@ thread_pool* thread_pool_create(size_t num_threads) {
     thread_info->id = i;
     thread_info->status = thread_status_empty;
     sprintf(thread_info->name, "worker-%zu", i); // "worker%I64d" lead to segfault on linux
+
+    if(enable_monitoring) {
+     thread_info->statistics = malloc(sizeof(thread_stats));
+   }
     
   }
   for(size_t i = 0; i < num_threads; ++i)
@@ -41,8 +49,8 @@ thread_pool* thread_pool_create(size_t num_threads) {
    return pool;
 }
 
-thread_pool* thread_pool_create_named(size_t num_threads, const char* name) {
-  thread_pool* pool = thread_pool_create(num_threads);
+thread_pool* thread_pool_create_named(size_t num_threads, const char* name, int enable_monitoring) {
+  thread_pool* pool = thread_pool_create(num_threads, enable_monitoring);
 
   if(name) {
     thread_pool_set_name(pool, name);
@@ -169,17 +177,6 @@ status_e thread_pool_wait_for_all(thread_pool* pool){
   return status_failed;
 }
 
-double thread_pool_get_time_working(thread_pool* pool){
-  struct timespec end;
-  clock_gettime(CLOCK_MONOTONIC, &end);
-  double avg = 0.f;
-  for(size_t i = 0; i < pool->size; ++i){
-    double t = end.tv_sec - pool->thread_infos[i]->creation_time.tv_sec + (end.tv_nsec - pool->thread_infos[i]->creation_time.tv_nsec) / 1000000000.0;
-    avg += t / (t + pool->thread_infos[i]->time_spend_idle);
-  }
-  return avg / pool->size;
-}
-
 //
 //  INTERNAL METHODS
 //
@@ -187,22 +184,33 @@ double thread_pool_get_time_working(thread_pool* pool){
 void *__thread_main(void* args) {
   __thread_information* thread_info = (__thread_information*)args;
 
-  //structs for short waiting interval
-//  struct timespec waiting_time_start = {0 , 0};
-//  struct timespec waiting_time_end = {0 , 100};
-  clock_gettime(CLOCK_MONOTONIC, &thread_info->creation_time);
-  struct timespec begin = thread_info->creation_time;
+  // Fill statistics if available
+  struct timespec begin;
+  if(thread_info->statistics) {
+    clock_gettime(CLOCK_MONOTONIC, &thread_info->statistics->creation_time);
+    begin = thread_info->statistics->creation_time;
+  }
+  else 
+    clock_gettime(CLOCK_MONOTONIC, &begin);
 
   while(1){
     thread_task* next_task = __get_next_task(thread_info->pool);
     // the task has to be executed since it has been taken out of the queue
     if(next_task) {
-      // measure time outside to prevent incorrect times while in execution
-      struct timespec end;
-      clock_gettime(CLOCK_MONOTONIC, &end);
-      thread_info->time_spend_idle += (end.tv_sec - begin.tv_sec) + (end.tv_nsec - begin.tv_nsec) / 1000000000.0;
-      __execute_task(thread_info->pool, next_task);
-      clock_gettime(CLOCK_MONOTONIC, &begin);
+
+      // Fill statistics if available
+      if(thread_info->statistics)
+      {
+        // measure time outside to prevent incorrect times while in execution
+        struct timespec end;
+        clock_gettime(CLOCK_MONOTONIC, &end);
+        thread_info->statistics->idle_time += __get_time_diff(&begin, &end);
+        __execute_task(thread_info->pool, next_task);
+        clock_gettime(CLOCK_MONOTONIC, &begin);
+      }
+      else 
+        __execute_task(thread_info->pool, next_task);
+      
     }
 
     // Check if this thread has to terminate, set the status and leave the loop
