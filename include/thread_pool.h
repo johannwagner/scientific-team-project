@@ -7,7 +7,12 @@
 
 #include <stdlib.h>
 #include <pthread.h>
-#include <stdatomic.h>
+
+// Required due to bug in gcc, see https://gcc.gnu.org/bugzilla/show_bug.cgi?id=60932
+// stdatomic.h must no be included in GTest
+#ifndef CPP_TEST 
+	#include <stdatomic.h>
+#endif
 
 #include "status.h"
 #include "priority_queue.h"
