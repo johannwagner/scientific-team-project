@@ -9,6 +9,7 @@ using atomic_int = std::atomic<int>;
 extern "C" 
 {    
     #include "../../../include/thread_pool.h"
+    #include "../../../include/thread_pool_monitoring.h"
 }
 
 // Test the creatrion of thread pools
@@ -111,7 +112,6 @@ TEST(ThreadPool, TASK_STATISTICS){
         thread_pool_enqueue_task(&tasks[i], pool, NULL);
     }
 
-    ASSERT_NE(pool->statistics->task_complete_count, pool->statistics->task_enqueued_count);
     thread_pool_wait_for_all(pool);
 
     // All entries in the array have to be 0 to ensure the pool waits for all tasks
@@ -120,11 +120,55 @@ TEST(ThreadPool, TASK_STATISTICS){
         ASSERT_GT(tasks[i].statistics->enqueue_time.tv_nsec, 0);
         ASSERT_GT(tasks[i].statistics->execution_time.tv_nsec, tasks[i].statistics->enqueue_time.tv_nsec);
         ASSERT_GT(tasks[i].statistics->complete_time.tv_nsec, tasks[i].statistics->execution_time.tv_nsec);
-        
     }
 
-    ASSERT_EQ(pool->statistics->task_complete_count, 6);
-    ASSERT_EQ(pool->statistics->task_complete_count, pool->statistics->task_enqueued_count);
+    thread_pool_free(pool);
+}
+
+TEST(ThreadPool, POOL_STATISTICS){
+
+    int test[] = {1000000, 1000000, 1000000, 1000000, 1000000, 1000000 };
+    thread_pool* pool = thread_pool_create(2, 1);
+    thread_task tasks[6];
+    thread_pool_stats pool_stats;
+
+    for(int i = 0; i < 6; i++){
+        tasks[i].args = (void*)&test[i];
+        tasks[i].routine = work;
+        thread_pool_enqueue_task(&tasks[i], pool, NULL);
+    }
+
+    pool_stats = thread_pool_get_stats(pool);
+    ASSERT_EQ(pool_stats.task_enqueued_count, 6);
+    ASSERT_NE(pool_stats.task_complete_count, 6);
+
+    thread_pool_wait_for_all(pool);
+
+    pool_stats = thread_pool_get_stats(pool);
+    ASSERT_EQ(pool_stats.task_complete_count, pool_stats.task_enqueued_count);
+    std::cout << "Avg wait time (milis) " << pool_stats.avg_wait_time / 1000000.0 <<  " Avg complete time (milis) " << pool_stats.avg_complete_time / 1000000.0 << std::endl;
+
+    thread_pool_free(pool);
+}
+
+TEST(ThreadPool, THREAD_STATISTICS){
+
+    int test[] = {1000000, 1000000, 1000000, 1000000, 1000000, 1000000 };
+    thread_pool* pool = thread_pool_create(2, 1);
+    thread_task tasks[6];
+    thread_stats thread_stats;
+
+    for(int i = 0; i < 6; i++){
+        tasks[i].args = (void*)&test[i];
+        tasks[i].routine = work;
+    }
+
+    thread_pool_enqueue_tasks_wait(tasks, pool, 6);
+
+    thread_stats = thread_pool_get_thread_stats(pool, 0);
+    ASSERT_GT(thread_stats.task_count, 0);
+    std::cout << "busy time for first thread (milis) " << thread_stats.busy_time / 1000000.0 << std::endl;
+    std::cout << "idle time for first thread (milis) " << thread_stats.idle_time / 1000000.0 << std::endl;
 
     thread_pool_free(pool);
 }

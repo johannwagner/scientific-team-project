@@ -67,6 +67,7 @@ void thread_pool_free(thread_pool* pool) {
     // wait for threads to finish
     for(size_t i=0; i < pool->size; ++i) {
       pthread_join(pool->pool[i], NULL);
+      free(pool->thread_infos[i]->statistics);
       free(pool->thread_infos[i]);
     }
     for(size_t i = pool->size; i < pool->capacity; ++i)
@@ -79,6 +80,7 @@ void thread_pool_free(thread_pool* pool) {
     free(pool->thread_infos);
     free(pool->task_group_states);
     if(pool->name) free(pool->name);
+    free(pool->statistics);
     free(pool);
 }
 
@@ -194,6 +196,10 @@ status_e thread_pool_wait_for_all(thread_pool* pool){
       __execute_task(pool, next_task);
       clock_gettime(CLOCK_MONOTONIC, &next_task->statistics->complete_time);
       pool->statistics->task_complete_count++;
+
+      // Just add the time, calculate the average at evaluation time
+      pool->statistics->wait_time += __get_time_diff(&next_task->statistics->enqueue_time, &next_task->statistics->execution_time);
+      pool->statistics->complete_time += __get_time_diff(&next_task->statistics->execution_time, &next_task->statistics->complete_time);
     }
     else 
       __execute_task(pool, next_task);
@@ -241,7 +247,14 @@ void *__thread_main(void* args) {
         __execute_task(thread_info->pool, next_task);
         clock_gettime(CLOCK_MONOTONIC, &begin);
         next_task->statistics->complete_time = begin;
+        thread_info->statistics->task_count++;
         thread_info->pool->statistics->task_complete_count++;
+        
+
+        // Just add the time, calculate the average at evaluation time
+        thread_info->pool->statistics->avg_wait_time += __get_time_diff(&next_task->statistics->enqueue_time, &next_task->statistics->execution_time);
+        thread_info->pool->statistics->avg_complete_time += __get_time_diff(&next_task->statistics->execution_time, &next_task->statistics->complete_time);
+        
       }
       else 
         __execute_task(thread_info->pool, next_task);
