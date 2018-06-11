@@ -57,21 +57,16 @@ void work(void* args)
 
 TEST(ThreadPool, WAIT){
 
-    thread_pool* pool = thread_pool_create(2, 0);
-
     int test[] = {1000000, 1000000, 1000000, 1000000, 1000000, 1000000 };
-    
+    thread_pool* pool = thread_pool_create(2, 0);
     thread_task tasks[6];
 
     for(int i = 0; i < 6; i++){
-        
         tasks[i].args = (void*)&test[i];
         tasks[i].routine = work;
     }
 
-    //std::cout << "Start Waiting" << std::endl;
     thread_pool_enqueue_tasks_wait(tasks, pool, 6);
-    //std::cout << "Finished Waiting" << std::endl;
 
     // All entries in the array have to be 0 to ensure the pool waits for all tasks
     for(int i = 0; i < 6; i++){
@@ -79,6 +74,58 @@ TEST(ThreadPool, WAIT){
     }
 
     thread_pool_free(pool);
-    
+}
+
+
+TEST(ThreadPool, WAIT_FOR_ALL){
+
+    int test[] = {1000000, 1000000, 1000000, 1000000, 1000000, 1000000 };
+    thread_pool* pool = thread_pool_create(2, 0);
+    thread_task tasks[6];
+
+    for(int i = 0; i < 6; i++){
+        tasks[i].args = (void*)&test[i];
+        tasks[i].routine = work;
+        thread_pool_enqueue_task(&tasks[i], pool, NULL);
+    }
+
+    thread_pool_wait_for_all(pool);
+
+    // All entries in the array have to be 0 to ensure the pool waits for all tasks
+    for(int i = 0; i < 6; i++){
+        ASSERT_EQ(test[i], 0);
+    }
+
+    thread_pool_free(pool);
+}
+
+TEST(ThreadPool, TASK_STATISTICS){
+
+    int test[] = {1000000, 1000000, 1000000, 1000000, 1000000, 1000000 };
+    thread_pool* pool = thread_pool_create(2, 1);
+    thread_task tasks[6];
+
+    for(int i = 0; i < 6; i++){
+        tasks[i].args = (void*)&test[i];
+        tasks[i].routine = work;
+        thread_pool_enqueue_task(&tasks[i], pool, NULL);
+    }
+
+    ASSERT_NE(pool->statistics->task_complete_count, pool->statistics->task_enqueued_count);
+    thread_pool_wait_for_all(pool);
+
+    // All entries in the array have to be 0 to ensure the pool waits for all tasks
+    for(int i = 0; i < 6; i++){
+        //std::cout << "task_complete_time " <<  tasks[i].statistics->complete_time.tv_nsec << std::endl;
+        ASSERT_GT(tasks[i].statistics->enqueue_time.tv_nsec, 0);
+        ASSERT_GT(tasks[i].statistics->execution_time.tv_nsec, tasks[i].statistics->enqueue_time.tv_nsec);
+        ASSERT_GT(tasks[i].statistics->complete_time.tv_nsec, tasks[i].statistics->execution_time.tv_nsec);
+        
+    }
+
+    ASSERT_EQ(pool->statistics->task_complete_count, 6);
+    ASSERT_EQ(pool->statistics->task_complete_count, pool->statistics->task_enqueued_count);
+
+    thread_pool_free(pool);
 }
 
