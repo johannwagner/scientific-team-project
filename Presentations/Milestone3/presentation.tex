@@ -12,7 +12,7 @@
 
 \title{Thread Pool in GeckoDB/BOLSTER}
 \subtitle{Milestone III: Implementation \& evaluation setup}
-\author{Johann Wagner, Johannes Wünsche, Marten Wallewein-Eising, Robert Jenderise, Benedikt Zeilinger}
+\author{Johann Wagner, Johannes Wünsche, Marten Wallewein-Eising, Robert Jenderise}
 \date{\today}
 \institute{Otto von Guericke University, Magdeburg}
 
@@ -189,6 +189,16 @@
 	\end{center}
 	\begin{itemize}
 		\item $avg\_wait\_time$ indicates the quality of the chosen thread pool size
+	\end{itemize}
+\end{frame}
+
+\begin{frame}
+	\frametitle{Possible Optimization Opportunities}
+	\begin{itemize}
+		\item improve Priority Queue data structure
+		\item change distribution of Wait-Slots
+		\item reduce number of dynamic allocations
+		\item adjust number of threads to increase occupancy
 	\end{itemize}
 \end{frame}
 
