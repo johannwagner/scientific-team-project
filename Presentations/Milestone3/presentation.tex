@@ -12,7 +12,7 @@
 
 \title{Thread Pool in GeckoDB/BOLSTER}
 \subtitle{Milestone III: Implementation \& evaluation setup}
-\author{Johann Wagner, Johannes Wünsche, Marten Wallewein-Eising, Robert Jenderise, Benedikt Zeilinger}
+\author{Johann Wagner, Johannes Wünsche, Marten Wallewein-Eising, Robert Jenderise}
 \date{\today}
 \institute{Otto von Guericke University, Magdeburg}
 
@@ -91,6 +91,20 @@
 \end{frame}
 
 \begin{frame}
+	\frametitle{Usage Examples}
+	\begin{center}
+		\includegraphics[width=0.95\textwidth]{img/thread_pool_use.png}
+	\end{center}
+\end{frame}
+
+\begin{frame}
+\frametitle{Usage Examples}
+\begin{center}
+	\includegraphics[width=0.95\textwidth]{img/thread_pool_use2.png}
+\end{center}
+\end{frame}
+
+\begin{frame}
 	\frametitle{Open issues}
 	\begin{itemize}
 		\item GTest still has some problems with c atomics due to itself being implemented in C++
@@ -112,6 +126,7 @@
 		\item Use of geckodb to stress test the thread pool by with BOLSTER primitives
 		\item Measure different statistics for tasks, thread and thread pools
 		\item Use statistics to determine optimal configurations for different thread pool instances
+		\item Time measures are taken with wall clock time
 	\end{itemize}
 \end{frame}
 
@@ -142,8 +157,8 @@
 			\hline
 			\textbf{Statistic name}&\textbf{Description}\\
 			\hline
-			waiting\_time & Time the thread spend waiting (ms) \\
-			busy\_time & Time the thread spend executing tasks (ms)\\
+			waiting\_time & Time the thread spend waiting (ns) \\
+			busy\_time & Time the thread spend executing tasks (ns)\\
 			task\_count & Number of tasks the thread has executed \\
 			\hline
 		\end{tabular}
@@ -162,7 +177,7 @@
 			\hline
 			\textbf{Statistic name}&\textbf{Description}\\
 			\hline
-			working\_time & Time the thread pool runs (ms) \\
+			working\_time & Time the thread pool runs (ns) \\
 			task\_complete\_count & Number of completed tasks \\
 			task\_enqueued\_count & Number of enqueued tasks \\
 			avg\_complete\_time & Average time span from enqueueing until \\
@@ -177,6 +192,16 @@
 	\end{itemize}
 \end{frame}
 
+\begin{frame}
+	\frametitle{Possible Optimization Opportunities}
+	\begin{itemize}
+		\item Improve Priority Queue data structure
+		\item Change distribution of Wait-Slots
+		\item Reduce number of dynamic allocations
+		\item Adjust number of threads to increase occupancy
+	\end{itemize}
+\end{frame}
+
 \section{Paper Progress}
 \begin{frame}
 	\begin{center}
@@ -186,9 +211,10 @@
 
 \begin{frame}
 	\begin{itemize}
-		\item Introduction and Preliminaries mostly completed
+		\item Introduction and Preliminaries completed
 		\item Implementation described, including our used concepts and basic ideas how to build and operate the pool
-		\item Still required is the Evaluation(since we still need to perform it), the description of our testing environment and our final conclusion
+		\item Still required are the evaluation (since we still need to
+			measure the actual performance), the description of our testing environment and our final conclusion
 	\end{itemize}
 \end{frame}
 
