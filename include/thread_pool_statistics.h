@@ -10,16 +10,16 @@ typedef struct thread_pool_stats {
 	struct timespec creation_time;
 	unsigned int task_enqueued_count;
 	unsigned int task_complete_count; 
-	double complete_time;
-	double wait_time;
-	double avg_complete_time;
-	double avg_wait_time;
+	long complete_time;
+	long wait_time;
+	long avg_complete_time;
+	long avg_wait_time;
 } thread_pool_stats;
 
 typedef struct thread_stats {
 	struct timespec creation_time;
-	double idle_time;
-	double busy_time;
+	long idle_time;
+	long busy_time;
 	size_t task_count;
 } thread_stats;
 

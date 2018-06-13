@@ -95,6 +95,8 @@ void performance_test(int numThreads, int numTasks)
 
 	float a = thread_pool_get_time_working(pool);
 	printf("fraction of time spend working: %f\n",a);
+
+	thread_pool_free(pool);
 }
 
 
