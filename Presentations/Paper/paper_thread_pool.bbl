@@ -1,5 +1,16 @@
 \begin{thebibliography}{1}
 
+\bibitem{xu2004performance}
+Xu, D., Bode, B.:
+\newblock Performance study and dynamic optimization design for thread pool
+  systems.
+\newblock PhD thesis, Citeseer (2004)
+
+\bibitem{ling2000analysis}
+Ling, Y., Mullen, T., Lin, X.:
+\newblock Analysis of optimal thread pool size.
+\newblock ACM SIGOPS Operating Systems Review \textbf{34}(2) (2000)  42--55
+
 \bibitem{pyarali2001evaluating}
 Pyarali, I., Spivak, M., Cytron, R., Schmidt, D.C.:
 \newblock Evaluating and optimizing thread pool strategies for real-time corba.
