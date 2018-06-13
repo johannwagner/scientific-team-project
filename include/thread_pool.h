@@ -59,7 +59,6 @@ typedef struct thread_pool {
 	size_t task_state_capacity; // number of tasks that can be tracked
 	size_t size;
 	size_t capacity;
-//    thread_status_e* thread_status;
 	struct __thread_information** thread_infos;
 	thread_task** thread_tasks;
 	thread_pool_stats* statistics; 
@@ -70,8 +69,7 @@ typedef struct __thread_information {
 	thread_pool* pool;
 	size_t id;
 	atomic_int status;
-	struct timespec creation_time;
-	double time_spend_idle; // actually the time not spend directly executing a task
+	struct timespec creation; // cannot be removed, leads to segfault
 	thread_stats* statistics;
 } __thread_information;
 
@@ -113,11 +111,6 @@ status_e thread_pool_wait_for_all(thread_pool* pool);
 //
 
 void *__thread_main(void *args);
-void __thread_idle();
-status_e __check_for_group_queue(priority_queue_t* waiting_tasks, size_t size, size_t task_id);
-status_e __check_for_thread_tasks(thread_pool* pool, size_t id);
-//status_e __remove_from_queue(priority_queue_t* waiting_tasks, size_t task_id);
-
 thread_task* __get_next_task(thread_pool *pool);
 
 status_e __create_thread(__thread_information* thread_info, pthread_t* pp);

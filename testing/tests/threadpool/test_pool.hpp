@@ -56,6 +56,21 @@ void work(void* args)
     //std::cout << "Work finished" << std::endl;
 }
 
+TEST(ThreadPool, Resize) {
+
+    thread_pool* pool = thread_pool_create(4, 0);
+    EXPECT_TRUE(pool);
+
+    status_e status = thread_pool_resize(pool, 6);
+
+    EXPECT_EQ(status, status_ok);
+    EXPECT_EQ(pool->size, 6);
+    //EXPECT_EQ(sizeof(pool->pool), 6 * sizeof(pthread_t));
+
+    thread_pool_free(pool);
+
+}
+
 TEST(ThreadPool, WAIT){
 
     int test[] = {1000000, 1000000, 1000000, 1000000, 1000000, 1000000 };
