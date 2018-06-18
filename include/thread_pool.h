@@ -61,7 +61,8 @@ typedef struct thread_pool {
 	size_t capacity;
 	struct __thread_information** thread_infos;
 	thread_task** thread_tasks;
-	thread_pool_stats* statistics; 
+	thread_pool_stats* statistics;
+	int enable_monitoring;
 } thread_pool;
 
 typedef struct __thread_information {
