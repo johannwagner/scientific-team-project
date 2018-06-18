@@ -35,7 +35,7 @@ typedef struct thread_task {
 	task_routine routine;
 	size_t group_id;
 	size_t priority;
-	task_stats* statistics; 
+	task_stats statistics; 
 } thread_task;
 
 struct __thread_information;

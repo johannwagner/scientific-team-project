@@ -141,8 +141,8 @@ status_e thread_pool_enqueue_tasks(thread_task* tasks, thread_pool* pool, size_t
   for(size_t i= 0; i < num_tasks; i++) {
     
     if(pool->enable_monitoring){
-      tasks[i].statistics = calloc(1, sizeof(task_stats));
-      clock_gettime(CLOCK_MONOTONIC, &tasks[i].statistics->enqueue_time);
+      //tasks[i].statistics = calloc(1, sizeof(task_stats));
+      clock_gettime(CLOCK_MONOTONIC, &tasks[i].statistics.enqueue_time);
       pool->statistics->task_enqueued_count++;
     }
     
@@ -172,14 +172,14 @@ status_e thread_pool_enqueue_tasks_wait(thread_task* tasks, thread_pool* pool, s
   
   if(pool->enable_monitoring){
     pool->statistics->task_enqueued_count++;
-    main_task->statistics = calloc(1, sizeof(task_stats));
+    //main_task->statistics = calloc(1, sizeof(task_stats));
     
     // No waiting if the calling thread executes the task
-    clock_gettime(CLOCK_MONOTONIC, &main_task->statistics->enqueue_time);
-    main_task->statistics->execution_time = main_task->statistics->enqueue_time;
+    clock_gettime(CLOCK_MONOTONIC, &main_task->statistics.enqueue_time);
+    main_task->statistics.execution_time = main_task->statistics.enqueue_time;
     
     (*main_task->routine)(main_task->args);
-    clock_gettime(CLOCK_MONOTONIC, &main_task->statistics->complete_time);
+    clock_gettime(CLOCK_MONOTONIC, &main_task->statistics.complete_time);
     pool->statistics->task_complete_count++;
   }
   else
@@ -201,14 +201,14 @@ status_e thread_pool_wait_for_all(thread_pool* pool){
   while((next_task = __get_next_task(pool))){
 
     if(pool->enable_monitoring){
-      clock_gettime(CLOCK_MONOTONIC, &next_task->statistics->execution_time);
+      clock_gettime(CLOCK_MONOTONIC, &next_task->statistics.execution_time);
       __execute_task(pool, next_task);
-      clock_gettime(CLOCK_MONOTONIC, &next_task->statistics->complete_time);
+      clock_gettime(CLOCK_MONOTONIC, &next_task->statistics.complete_time);
       pool->statistics->task_complete_count++;
 
       // Just add the time, calculate the average at evaluation time
-      pool->statistics->wait_time += __get_time_diff(&next_task->statistics->enqueue_time, &next_task->statistics->execution_time);
-      pool->statistics->complete_time += __get_time_diff(&next_task->statistics->execution_time, &next_task->statistics->complete_time);
+      pool->statistics->wait_time += __get_time_diff(&next_task->statistics.enqueue_time, &next_task->statistics.execution_time);
+      pool->statistics->complete_time += __get_time_diff(&next_task->statistics.execution_time, &next_task->statistics.complete_time);
     }
     else 
       __execute_task(pool, next_task);
@@ -248,18 +248,18 @@ void *__thread_main(void* args) {
         // measure time outside to prevent incorrect times while in execution
         struct timespec end;
         clock_gettime(CLOCK_MONOTONIC, &end);
-        next_task->statistics->execution_time = end;
+        next_task->statistics.execution_time = end;
         thread_info->statistics->idle_time += __get_time_diff(&begin, &end);
         
         __execute_task(thread_info->pool, next_task);
         clock_gettime(CLOCK_MONOTONIC, &begin);
-        next_task->statistics->complete_time = begin;
+        next_task->statistics.complete_time = begin;
         thread_info->statistics->task_count++;
         thread_info->pool->statistics->task_complete_count++;
         
         // Just add the time, calculate the average at evaluation time
-        thread_info->pool->statistics->wait_time += __get_time_diff(&next_task->statistics->enqueue_time, &next_task->statistics->execution_time);
-        thread_info->pool->statistics->complete_time += __get_time_diff(&next_task->statistics->execution_time, &next_task->statistics->complete_time);
+        thread_info->pool->statistics->wait_time += __get_time_diff(&next_task->statistics.enqueue_time, &next_task->statistics.execution_time);
+        thread_info->pool->statistics->complete_time += __get_time_diff(&next_task->statistics.execution_time, &next_task->statistics.complete_time);
         
       }
       else 
