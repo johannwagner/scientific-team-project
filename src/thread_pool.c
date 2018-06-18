@@ -69,11 +69,18 @@ void thread_pool_free(thread_pool* pool) {
     // wait for threads to finish
     for(size_t i=0; i < pool->size; ++i) {
       pthread_join(pool->pool[i], NULL);
-      if(pool->enable_monitoring)free(pool->thread_infos[i]->statistics);
+      if(pool->enable_monitoring) 
+        free(pool->thread_infos[i]->statistics);
+      
       free(pool->thread_infos[i]);
     }
-    for(size_t i = pool->size; i < pool->capacity; ++i)
+    for(size_t i = pool->size; i < pool->capacity; ++i) {
+       if(pool->enable_monitoring) 
+        free(pool->thread_infos[i]->statistics);
+        
       free(pool->thread_infos[i]);
+    }
+      
 
     priority_queue_free(pool->waiting_tasks);
     free(pool->pool);
