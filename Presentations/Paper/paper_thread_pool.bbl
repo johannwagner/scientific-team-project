@@ -11,6 +11,10 @@ Ling, Y., Mullen, T., Lin, X.:
 \newblock Analysis of optimal thread pool size.
 \newblock ACM SIGOPS Operating Systems Review \textbf{34}(2) (2000)  42--55
 
+\bibitem{atomicstrong}
+cppreference.com:
+\newblock atomic\_compare\_exchange\_strong - cppreference.com (2016)
+
 \bibitem{pyarali2001evaluating}
 Pyarali, I., Spivak, M., Cytron, R., Schmidt, D.C.:
 \newblock Evaluating and optimizing thread pool strategies for real-time corba.

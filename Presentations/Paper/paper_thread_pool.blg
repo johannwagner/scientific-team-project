@@ -1,3 +1,6 @@
 This is BibTeX, Version 0.99dThe top-level auxiliary file: paper_thread_pool.aux
 The style file: splncs.bst
 Database file #1: paper_thread_pool.bib
+Warning--entry type for "atomicstrong" isn't style-file defined
+--line 30 of file paper_thread_pool.bib
+(There was 1 warning)
