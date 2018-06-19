@@ -18,9 +18,10 @@ thread_pool* thread_pool_create(size_t num_threads, int enable_monitoring) {
   pool->waiting_tasks = calloc(1, sizeof(priority_queue_t));
 
   pool->thread_tasks = calloc(num_threads, sizeof(thread_task*));
-  pool->thread_infos = malloc(sizeof(__thread_information*) * pool->capacity);
+  pool->thread_infos = calloc(sizeof(__thread_information*) * pool->capacity, 1);
   pool->task_state_capacity = 4096;
   pool->task_group_states = calloc(pool->task_state_capacity, sizeof(__task_state));
+  pool->enable_monitoring = enable_monitoring;
 
   pthread_t* threads = malloc(sizeof(pthread_t) * pool->capacity);
   pool->pool = threads;
@@ -68,11 +69,18 @@ void thread_pool_free(thread_pool* pool) {
     // wait for threads to finish
     for(size_t i=0; i < pool->size; ++i) {
       pthread_join(pool->pool[i], NULL);
-      free(pool->thread_infos[i]->statistics);
+      if(pool->enable_monitoring) 
+        free(pool->thread_infos[i]->statistics);
+      
       free(pool->thread_infos[i]);
     }
-    for(size_t i = pool->size; i < pool->capacity; ++i)
+    for(size_t i = pool->size; i < pool->capacity; ++i) {
+       if(pool->enable_monitoring) 
+        free(pool->thread_infos[i]->statistics);
+        
       free(pool->thread_infos[i]);
+    }
+      
 
     priority_queue_free(pool->waiting_tasks);
     free(pool->pool);
@@ -81,7 +89,7 @@ void thread_pool_free(thread_pool* pool) {
     free(pool->thread_infos);
     free(pool->task_group_states);
     if(pool->name) free(pool->name);
-    free(pool->statistics);
+    if(pool->enable_monitoring) free(pool->statistics);
     free(pool);
 }
 
@@ -107,7 +115,7 @@ status_e thread_pool_resize(thread_pool* pool, size_t num_threads)
       if(atomic_compare_exchange_strong(&pool->thread_infos[i]->status, &will_terminate, thread_status_idle));
       else{ 
         // create a new
-        if(pool->statistics && !pool->thread_infos[i]->statistics) {
+        if(pool->enable_monitoring && !pool->thread_infos[i]->statistics) {
           pool->thread_infos[i]->statistics = calloc(1, sizeof(thread_stats));
         }
         __create_thread(pool->thread_infos[i], &pool->pool[i]);
@@ -139,9 +147,9 @@ status_e thread_pool_enqueue_tasks(thread_task* tasks, thread_pool* pool, size_t
   
   for(size_t i= 0; i < num_tasks; i++) {
     
-    if(pool->statistics){
-      tasks[i].statistics = calloc(1, sizeof(task_stats));
-      clock_gettime(CLOCK_MONOTONIC, &tasks[i].statistics->enqueue_time);
+    if(pool->enable_monitoring){
+      //tasks[i].statistics = calloc(1, sizeof(task_stats));
+      clock_gettime(CLOCK_MONOTONIC, &tasks[i].statistics.enqueue_time);
       pool->statistics->task_enqueued_count++;
     }
     
@@ -169,16 +177,16 @@ status_e thread_pool_enqueue_tasks_wait(thread_task* tasks, thread_pool* pool, s
   // Execute the last tasks in the calling thread
   thread_task* main_task = &tasks[num_tasks - 1];
   
-  if(pool->statistics){
+  if(pool->enable_monitoring){
     pool->statistics->task_enqueued_count++;
-    main_task->statistics = calloc(1, sizeof(task_stats));
+    //main_task->statistics = calloc(1, sizeof(task_stats));
     
     // No waiting if the calling thread executes the task
-    clock_gettime(CLOCK_MONOTONIC, &main_task->statistics->enqueue_time);
-    main_task->statistics->execution_time = main_task->statistics->enqueue_time;
+    clock_gettime(CLOCK_MONOTONIC, &main_task->statistics.enqueue_time);
+    main_task->statistics.execution_time = main_task->statistics.enqueue_time;
     
     (*main_task->routine)(main_task->args);
-    clock_gettime(CLOCK_MONOTONIC, &main_task->statistics->complete_time);
+    clock_gettime(CLOCK_MONOTONIC, &main_task->statistics.complete_time);
     pool->statistics->task_complete_count++;
   }
   else
@@ -199,15 +207,15 @@ status_e thread_pool_wait_for_all(thread_pool* pool){
   thread_task* next_task;
   while((next_task = __get_next_task(pool))){
 
-    if(pool->statistics){
-      clock_gettime(CLOCK_MONOTONIC, &next_task->statistics->execution_time);
+    if(pool->enable_monitoring){
+      clock_gettime(CLOCK_MONOTONIC, &next_task->statistics.execution_time);
       __execute_task(pool, next_task);
-      clock_gettime(CLOCK_MONOTONIC, &next_task->statistics->complete_time);
+      clock_gettime(CLOCK_MONOTONIC, &next_task->statistics.complete_time);
       pool->statistics->task_complete_count++;
 
       // Just add the time, calculate the average at evaluation time
-      pool->statistics->wait_time += __get_time_diff(&next_task->statistics->enqueue_time, &next_task->statistics->execution_time);
-      pool->statistics->complete_time += __get_time_diff(&next_task->statistics->execution_time, &next_task->statistics->complete_time);
+      pool->statistics->wait_time += __get_time_diff(&next_task->statistics.enqueue_time, &next_task->statistics.execution_time);
+      pool->statistics->complete_time += __get_time_diff(&next_task->statistics.execution_time, &next_task->statistics.complete_time);
     }
     else 
       __execute_task(pool, next_task);
@@ -231,7 +239,7 @@ void *__thread_main(void* args) {
 
   // Fill statistics if available
   struct timespec begin;
-  if(thread_info->statistics) {
+  if(thread_info->pool->enable_monitoring) {
     clock_gettime(CLOCK_MONOTONIC, &thread_info->statistics->creation_time);
     begin = thread_info->statistics->creation_time;
   }
@@ -242,23 +250,23 @@ void *__thread_main(void* args) {
     if(next_task) {
 
       // Fill statistics if available
-      if(thread_info->statistics)
+      if(thread_info->pool->enable_monitoring)
       {
         // measure time outside to prevent incorrect times while in execution
         struct timespec end;
         clock_gettime(CLOCK_MONOTONIC, &end);
-        next_task->statistics->execution_time = end;
+        next_task->statistics.execution_time = end;
         thread_info->statistics->idle_time += __get_time_diff(&begin, &end);
         
         __execute_task(thread_info->pool, next_task);
         clock_gettime(CLOCK_MONOTONIC, &begin);
-        next_task->statistics->complete_time = begin;
+        next_task->statistics.complete_time = begin;
         thread_info->statistics->task_count++;
         thread_info->pool->statistics->task_complete_count++;
         
         // Just add the time, calculate the average at evaluation time
-        thread_info->pool->statistics->wait_time += __get_time_diff(&next_task->statistics->enqueue_time, &next_task->statistics->execution_time);
-        thread_info->pool->statistics->complete_time += __get_time_diff(&next_task->statistics->execution_time, &next_task->statistics->complete_time);
+        thread_info->pool->statistics->wait_time += __get_time_diff(&next_task->statistics.enqueue_time, &next_task->statistics.execution_time);
+        thread_info->pool->statistics->complete_time += __get_time_diff(&next_task->statistics.execution_time, &next_task->statistics.complete_time);
         
       }
       else 

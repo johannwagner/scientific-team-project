@@ -35,7 +35,7 @@ typedef struct thread_task {
 	task_routine routine;
 	size_t group_id;
 	size_t priority;
-	task_stats* statistics; 
+	task_stats statistics; 
 } thread_task;
 
 struct __thread_information;
@@ -61,7 +61,8 @@ typedef struct thread_pool {
 	size_t capacity;
 	struct __thread_information** thread_infos;
 	thread_task** thread_tasks;
-	thread_pool_stats* statistics; 
+	thread_pool_stats* statistics;
+	int enable_monitoring;
 } thread_pool;
 
 typedef struct __thread_information {

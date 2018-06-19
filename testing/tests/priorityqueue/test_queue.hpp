@@ -17,6 +17,9 @@ TEST(PriorityQueue, IsEmpty) {
 		priority_queue_push(&queue, (void*)i, i);
 
 	EXPECT_EQ(!priority_queue_is_empty(&queue), 1);
+
+	priority_queue_free(&queue);
+
 }
 
 // Test if push with Prio works correktly
@@ -32,4 +35,6 @@ TEST(PriorityQueue, PushPrio) {
 	priority_queue_push(&queue,(void*)&test, 0);
 
 	EXPECT_EQ(*(int*)priority_queue_pop(&queue), test);
+
+	priority_queue_free(&queue);
 }

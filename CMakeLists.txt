@@ -32,7 +32,7 @@ target_link_libraries (gecko_thread_pool m)
 
 if (UNIX) 
         #find_package(Check REQUIRED)
-        SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -pthread -lcheck")
+        SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -o0 -pthread")
         include_directories("/usr/local/include")
 
         #include_directories(${CHECK_INCLUDE_DIRS})
