@@ -116,6 +116,59 @@ TEST(ThreadPool, WAIT_FOR_ALL){
     thread_pool_free(pool);
 }
 
+void LIVE_RESIZE_work(void* args)
+{
+	int* res = static_cast<int*>(args);
+	int sum = 0;
+	for(int i = 0; i <= *res; ++i)
+		sum += i * i / 8;
+
+	*res = sum;
+}
+
+Test(ThreadPool, LIVE_RESIZE){
+	thread_pool* pool = thread_pool_create(2, 0);
+	task_handle hndl;
+	const int numThreads = 1 << 11;
+	thread_task tasks[numThreads];
+	int results[numThreads];
+	for(int i = numThreads-1; i >= 0; --i){
+		results[i] = i;
+		tasks[i].args = &results[i];
+		tasks[i].routine = LIVE_RESIZE_work;
+		tasks[i].priority = 0;
+		if(i == 0) tasks[i].priority = 1;
+		thread_pool_enqueue_task(&tasks[i], pool, &hndl);
+		if( i == numThreads * 1 / 3) {
+			ASSERT_EQ(pool->size, 2);
+			thread_pool_resize(pool, 4);
+			ASSERT_EQ(pool->size, 4);
+		}
+		if(i == numThreads * 2 / 3) {
+			ASSERT_EQ(pool->size, 4);
+			thread_pool_resize(pool, 3);
+			ASSERT_EQ(pool->size, 3);
+		}
+		if(i == numThreads * 3 / 4) {
+			ASSERT_EQ(pool->size, 3);
+			thread_pool_resize(pool,2);
+			ASSERT_EQ(pool->size, 2);
+		}
+	}
+	ASSERT_EQ(pool->size, 2);
+
+	thread_pool_wait_for_all(pool);
+	thread_pool_free(pool);
+
+	// verify results
+	int sum = 0;
+	for(int i = 0; i < numThreads; ++i)
+	{
+		sum += i*i / 8;
+		ASSERT_EQ(results[i], sum);
+	}
+}
+
 TEST(ThreadPool, TASK_STATISTICS){
 
     int test[] = {1000000, 1000000, 1000000, 1000000, 1000000, 1000000 };
