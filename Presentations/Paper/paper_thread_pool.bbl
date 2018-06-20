@@ -15,9 +15,14 @@ Ling, Y., Mullen, T., Lin, X.:
 cppreference.com:
 \newblock atomic\_compare\_exchange\_strong - cppreference.com (2016)
 
-\bibitem{pyarali2001evaluating}
-Pyarali, I., Spivak, M., Cytron, R., Schmidt, D.C.:
-\newblock Evaluating and optimizing thread pool strategies for real-time corba.
-\newblock ACM SIGPLAN Notices \textbf{36}(8) (2001)  214--222
+\bibitem{sen2010quick}
+Sen, A.:
+\newblock A quick introduction to the google c++ testing framework.
+\newblock IBM DeveloperWorks (2010) ~20
+
+\bibitem{kim2011multicore}
+Kim, W., Voss, M.:
+\newblock Multicore desktop programming with intel threading building blocks.
+\newblock IEEE software \textbf{28}(1) (2011)  23--31
 
 \end{thebibliography}

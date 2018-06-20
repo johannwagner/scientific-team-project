@@ -37,7 +37,7 @@ Since the amount of data that is stored and processed by modern database systems
 Parallel data processing can be achieved by different approaches, like instruction and data parallelism or multi threading. In this paper, we focus on multi threading by implementing a thread pool for the graph database system GeckoDB. The thread pool will be integrated into BOLSTER, a high performance library for parallel execution of primitives like for or filter on large data sets. In the current implementation, BOLSTER creates a fix number of threads for each call of a primitive. This approach is called \emph{thread-per-request}. Since many primitives are executed at the same time, many drawbacks arise from this implementation. 
 First of all, the creation of threads comes along with overhead like stack initialisation and memory allocation. Secondly, creating a huge number of threads simultaneously may lead to large context switch overhead of the scheduler. Additionally, debugging and profiling applications that create many threads during runtime is 	time-consuming.
 
-To overcome these drawbacks, we integrate an optimised thread pool in BOLSTER. Along with the implementation, we measure the performance of the primitives to determine the thread pool overhead. Additionally, we measure metrics like \emph{idle and job time} of threads to evaluate correct thread pool sizes for the considered use cases.  In this work we make the following contributions:
+To overcome these drawbacks, we integrate an optimised thread pool in BOLSTER. Along with the implementation, we measure the performance of the primitives to determine the thread pool overhead. Additionally, we measure metrics like \emph{waiting and busy time} of threads to evaluate correct thread pool sizes for the considered use cases.  In this work we make the following contributions:
 \begin{itemize}
 	\item We describe our design and implementation of the thread pool 
 	\item We evaluate the possibility to wait for a group of task in the calling thread
@@ -169,7 +169,7 @@ As mentioned before, adjusting the thread pool size based on task statistics may
 The \emph{busy\_time} of a thread strongly depends on the executed tasks and therefor is a metric that gives less information about the thread pool itself. In contrast, the \emph{waiting\_time} is a good indicator to reveal less used threads in the thread pool to determine an optimal amount of threads for the current use case. Furthermore, the \emph{task\_count} of thread compared to the number of tasks processed by the thread pool indicates the degree of usage of the thread. To give further possibilities for optimizing the thread pool, we collect statistics for each thread pool instance.
 
 \subsubsection{Thread Pool Statistics}
-To consider the thread pool instance, an important metric is the average waiting time of tasks. In order to optimize the thread pool size, a balanced relation between the waiting time of tasks and the number of threads must be found. Furthermore, at a specific time, the relation between enqueued and completed tasks can be interesting. In Table \ref{tab4}, we show our statistics collected for each thread pool instance.
+To consider the thread pool instance, an important metric is the average waiting time of tasks. In order to optimize the thread pool size, a balanced relation between the waiting time of tasks and the number of threads must be found. Furthermore, at a specific time, the relation between enqueued and completed tasks can be interesting. In Table \ref{tab4}, we show our statistics collected for each thread pool instance. We will use these statistics to adapt our thread pool implementation to different use cases later on.
 
 \begin{table}[htbp]
 	\caption{Thread pool statistics with their internal names and descriptions}
@@ -190,7 +190,8 @@ To consider the thread pool instance, an important metric is the average waiting
 	\end{center}
 \end{table}
 
-We will use these statistics to adapt our thread pool implementation to different use cases later on. In the next sections, we define our experimental environment, the implementation of our tests including the measured metrics and the test results.
+\subsection{Testing and Memory Control}
+As last aspect of our implementation, we show how we test the thread pool and how we ensure to avoid memory leaks. Since geckoDB already uses GTest \cite{sen2010quick} for unit testing, we also wrote our test using this framework. 
 
 \section{Experimental Environment}	
 In this section, we present our experimental environment focussing on the design of our benchmarks and the system configuration we used to evaluate our thread pool implementation.
@@ -200,7 +201,7 @@ In our evaluation setup, we focus primarily on the comparison of using our threa
 
 Additionally, we evaluate the metrics for threads, tasks and the thread pool mentioned in Section 3.F regarding the thread pool and task configuration used in the BOLSTER primitives. To evaluate optimal configurations for the thread pool, we consider the relation between idle and busy time of the thread pool and the average waiting time of tasks.
 
-Furthermore, we compare the scope and usage of our thread pool against an existing implementation \emph{Threading Building Blocks (Intel TBB)} \textbf{TODO: cite!} written in C++. Since Intel TBB uses completely different approaches to parallel the execution of tasks, a direct performance comparison may not lead to reliable results. Therefore, we evaluate the usage and the scope both implementations give.
+Furthermore, we compare the scope and usage of our thread pool against an existing implementation \emph{Threading Building Blocks (Intel TBB)} \cite{kim2011multicore} written in C++. Since Intel TBB uses completely different approaches to parallel the execution of tasks, a direct performance comparison may not lead to reliable results. Therefore, we evaluate the usage and the scope both implementations give.
  
 \subsection{Experimental Configuration}
 \textbf{TODO: Change?}\\The operating system is Ubuntu 17.04 with linux kernel version 4.13 running in a virtual machine on an Intel Core i7-6700HQ, 4x 2.6 GHz (Skylake) and 8GB DDR3 RAM running on 1600Mhz. We reduce the number of cores of the virtual machine to 4 instead of 8 virtual cores of the CPU. The CPU has 256KB L1 cache, 1MB L2 cache, and 6MB L3 cache. All simulations are repeated three times and a median value of all repetitions is used for evaluation. 	
