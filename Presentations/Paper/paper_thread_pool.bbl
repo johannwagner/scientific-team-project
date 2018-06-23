@@ -25,4 +25,14 @@ Kim, W., Voss, M.:
 \newblock Multicore desktop programming with intel threading building blocks.
 \newblock IEEE software \textbf{28}(1) (2011)  23--31
 
+\bibitem{pyarali2001evaluating}
+Pyarali, I., Spivak, M., Cytron, R., Schmidt, D.C.:
+\newblock Evaluating and optimizing thread pool strategies for real-time corba.
+\newblock ACM SIGPLAN Notices \textbf{36}(8) (2001)  214--222
+
+\bibitem{schmidt1998evaluating}
+Schmidt, D.C.:
+\newblock Evaluating architectures for multithreaded object request brokers.
+\newblock Communications of the ACM \textbf{41}(10) (1998)  54--60
+
 \end{thebibliography}
