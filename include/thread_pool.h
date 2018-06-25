@@ -23,6 +23,8 @@
 //	GLOBAL VARIABLES
 //
 
+#define MAX_NUM_TASKS 4097
+
 //
 //	STRUCTS
 //

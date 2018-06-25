@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
+#include "benchmark_switches.h"
 
 static inline void __execute_task();
 
@@ -19,7 +20,7 @@ thread_pool* thread_pool_create(size_t num_threads, int enable_monitoring) {
 
   pool->thread_tasks = calloc(num_threads, sizeof(thread_task*));
   pool->thread_infos = calloc(sizeof(__thread_information*) * pool->capacity, 1);
-  pool->task_state_capacity = 4096;
+  pool->task_state_capacity = MAX_NUM_TASKS;
   pool->task_group_states = calloc(pool->task_state_capacity, sizeof(__task_state));
   pool->enable_monitoring = enable_monitoring;
 
@@ -138,9 +139,12 @@ status_e thread_pool_enqueue_tasks(thread_task* tasks, thread_pool* pool, size_t
   
   // find unused slot
   size_t ind = 0;
+#ifdef UNIFORM_SLOT_DISTRIBUTION
+  for(; pool->task_group_states[ind].task_count;ind = (ind + 8) % MAX_NUM_TASKS);
+#else
   for(; ind < pool->task_state_capacity && pool->task_group_states[ind].task_count; ++ind);
   if(ind == pool->task_state_capacity) return status_failed;
-
+#endif
   // increment generation first to always be identifiable as finished
   ++pool->task_group_states[ind].generation;
   pool->task_group_states[ind].task_count = num_tasks;

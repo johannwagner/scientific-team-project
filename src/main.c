@@ -6,7 +6,7 @@
 #include "thread_pool.h"
 #include "thread_pool_monitoring.h"
 
-#define WORK_SIZE 40000
+#define WORK_SIZE 128
 #define NUM_TASKS 2048
 
 void work_large(void* args)
@@ -15,7 +15,7 @@ void work_large(void* args)
 	double exp = *res;
 
 	double v = 0.0;
-	for(double i = 0; i < 1024; ++i)
+	for(double i = 0; i < WORK_SIZE; ++i)
 	{
 		v += pow(i, 1 / exp);
 	}
@@ -63,7 +63,7 @@ void resize_test()
 		sum += i*i / 8;
 		if(results[i] != sum) printf("error at %d: %d != %d\n", i, sum, results[i]);
 	}
-	printf("interleaving test completed.");
+	printf("interleaving test completed.\n");
 
 }
 
@@ -99,6 +99,31 @@ void performance_test(int numThreads, int numTasks)
 	thread_pool_free(pool);
 }
 
+float wait_performance_test(int numThreads, int numTasks)
+{
+	thread_pool* pool = thread_pool_create(numThreads, 1);
+
+	double results[numTasks];
+	thread_task tasks[numTasks];
+
+	for(int i = 0; i < numTasks; ++i)
+	{
+		results[i] = (double)(i+1);
+		tasks[i].args = &results[i];
+		tasks[i].routine = work_large;
+		tasks[i].priority = i;
+		task_handle hndl;
+		thread_pool_enqueue_task(&tasks[i], pool, &hndl);
+		if(i % 11 == 0) thread_pool_wait_for_task(pool, &hndl);
+	}
+	thread_pool_wait_for_all(pool);
+
+	float a = thread_pool_get_time_working(pool);
+//	printf("fraction of time spend working: %f\n",a);
+	thread_pool_free(pool);
+	return a;
+}
+
 
 int main()
 {
@@ -118,6 +143,13 @@ int main()
 	performance_test(2, 4000);
 	resize_test();
 
+	float sum = 0.f;
+	for(int i = 0; i < 1000; ++i)
+	{
+		sum += wait_performance_test(2, 1000);
+	}
+	sum /= 1000;
+	printf("average: %f\n", sum);
 	getchar();
 	return 0;
 }
