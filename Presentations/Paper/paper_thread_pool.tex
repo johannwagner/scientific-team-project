@@ -201,7 +201,7 @@ As last aspect of our implementation, we show how we test the thread pool and ho
 Since c as low level language does not have an own memory management, memory leaks may occur using heap space allocations. To find and remove all memory leaks in our implementation, we use the tool \emph{valgrind}, which offers different functionalities to find race and jump condition and to count unfreed heap blocks. We found memory leaks in our priority queue tests and also in the deallocation of thread pool instances. In the following sections, we show our experimental setup and the results of our evaluation. 
 
 \section{Experimental Environment}	
-In this section, we present our experimental environment focussing on the design of our benchmarks and the system configuration we used to evaluate our thread pool implementation.
+In this section, we present our experimental environment focusing on the design of our benchmarks and the system configuration we used to evaluate our thread pool implementation.
 
 \subsection{Evaluation Setup}
 In our evaluation setup, we focus primarily on the comparison of using our thread pool against the baseline implementation of creating new threads at runtime of BOLSTER. We simulate calls of BOLSTER primitives with different thread pool and task configurations and compare the results against the baseline. 
@@ -211,7 +211,23 @@ Additionally, we evaluate the metrics for threads, tasks and the thread pool men
 Furthermore, we compare the scope and usage of our thread pool against an existing implementation \emph{Threading Building Blocks (Intel TBB)} \cite{kim2011multicore} written in C++. Since Intel TBB uses completely different approaches to parallel the execution of tasks, a direct performance comparison may not lead to reliable results. Therefore, we evaluate the usage and the scope both implementations give.
  
 \subsection{Experimental Configuration}
-\textbf{TODO: Change!}\\The operating system is Ubuntu 17.04 with linux kernel version 4.13 running in a virtual machine on an Intel Core i7-6700HQ, 4x 2.6 GHz (Skylake) and 8GB DDR3 RAM running on 1600Mhz. We reduce the number of cores of the virtual machine to 4 instead of 8 virtual cores of the CPU. The CPU has 256KB L1 cache, 1MB L2 cache, and 6MB L3 cache. All simulations are repeated three times and a median value of all repetitions is used for evaluation. 	
+%\textbf{TODO: Change!}\\The operating system is Ubuntu 17.04 with linux kernel
+%version 4.13 running in a virtual machine on an Intel Core i7-6700HQ, 4x 2.6 GHz
+%(Skylake) and 8GB DDR3 RAM running on 1600Mhz. We reduce the number of cores of
+%the virtual machine to 4 instead of 8 virtual cores of the CPU. The CPU has
+%256KB L1 cache, 1MB L2 cache, and 6MB L3 cache. All benchmarks have been
+%repeated three times and a median value of all repetitions is being used for evaluation. 	
+
+For testing purposes we used primarly Linux setups, for one Ubuntu 17.04
+(linux 4.13) in an virtual machine environment, second Archlinux (linux
+4.17.2-1) running native, both updated on stable branch. Tests have also been
+conducted on Windows 10 and macOs HighSierra machines.
+
+In our setups mostly Sky- and Kabylake processors have been used with memory
+ranging from 8 to 24 GB of both DDR3-SODIMM and DDR4-SODIMM.
+
+All benchmarks have been repeated three times and a median value of all
+repetitions is being used for evaluation.
 
 \section{Evaluation}
 
