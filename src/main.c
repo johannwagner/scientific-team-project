@@ -38,7 +38,7 @@ void resize_test()
 	thread_pool_t* pool = thread_pool_create(2, 0);
 	task_handle_t hndl;
 	const int numThreads = 1 << 11;
-	thread_task_t tasks[numThreads];
+	thread_task_t    tasks[numThreads];
 	int results[numThreads];
 	for(int i = numThreads-1; i >= 0; --i){
 		results[i] = i;
