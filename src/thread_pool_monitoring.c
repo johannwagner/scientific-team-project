@@ -5,7 +5,7 @@
 // EXTERNAL METHODS
 // 
 
-thread_pool_stats thread_pool_get_stats(thread_pool* pool) {
+thread_pool_stats thread_pool_get_stats(thread_pool_t* pool) {
 
   // In case no tasks care completed, no averages can be calculated
   if(pool->statistics->task_complete_count) {
@@ -15,7 +15,7 @@ thread_pool_stats thread_pool_get_stats(thread_pool* pool) {
   return *pool->statistics;
 }
 
-thread_stats thread_pool_get_thread_stats(thread_pool* pool, size_t id) {
+thread_stats thread_pool_get_thread_stats(thread_pool_t* pool, size_t id) {
   thread_stats* thread_stats = pool->thread_infos[id]->statistics;
   
   // busy_time = running_time - idle_time
@@ -29,7 +29,7 @@ thread_stats thread_pool_get_thread_stats(thread_pool* pool, size_t id) {
 // HELP METHODS
 //
 
-double thread_pool_get_time_working(thread_pool* pool){
+double thread_pool_get_time_working(thread_pool_t* pool){
   struct timespec end;
   
   clock_gettime(CLOCK_MONOTONIC, &end);

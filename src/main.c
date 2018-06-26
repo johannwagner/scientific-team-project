@@ -35,10 +35,10 @@ void work(void* args)
 
 void resize_test()
 {
-	thread_pool* pool = thread_pool_create(2, 0);
-	task_handle hndl;
+	thread_pool_t* pool = thread_pool_create(2, 0);
+	task_handle_t hndl;
 	const int numThreads = 1 << 11;
-	thread_task tasks[numThreads];
+	thread_task_t tasks[numThreads];
 	int results[numThreads];
 	for(int i = numThreads-1; i >= 0; --i){
 		results[i] = i;
@@ -78,10 +78,10 @@ void performance_test(int numThreads, int numTasks)
 	time /= 2048;
 	printf("time for one task: time: %f | %f\n", time, exp);
 
-	thread_pool* pool = thread_pool_create(numThreads, 1);
+	thread_pool_t* pool = thread_pool_create(numThreads, 1);
 
 	double results[numTasks];
-	thread_task tasks[numTasks];
+	thread_task_t tasks[numTasks];
 
 	for(int i = 0; i < numTasks; ++i)
 	{
@@ -101,10 +101,10 @@ void performance_test(int numThreads, int numTasks)
 
 float wait_performance_test(int numThreads, int numTasks)
 {
-	thread_pool* pool = thread_pool_create(numThreads, 1);
+	thread_pool_t* pool = thread_pool_create(numThreads, 1);
 
 	double results[numTasks];
-	thread_task tasks[numTasks];
+	thread_task_t tasks[numTasks];
 
 	for(int i = 0; i < numTasks; ++i)
 	{
@@ -112,7 +112,7 @@ float wait_performance_test(int numThreads, int numTasks)
 		tasks[i].args = &results[i];
 		tasks[i].routine = work_large;
 		tasks[i].priority = i;
-		task_handle hndl;
+		task_handle_t hndl;
 		thread_pool_enqueue_task(&tasks[i], pool, &hndl);
 		if(i % 11 == 0) thread_pool_wait_for_task(pool, &hndl);
 	}

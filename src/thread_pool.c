@@ -10,18 +10,18 @@ static inline void __execute_task();
 //  EXTERNAL METHODS
 //
 
-thread_pool* thread_pool_create(size_t num_threads, int enable_monitoring) {
-  thread_pool* pool = malloc(sizeof(thread_pool));
+thread_pool_t* thread_pool_create(size_t num_threads, int enable_monitoring) {
+  thread_pool_t* pool = malloc(sizeof(thread_pool_t));
  
   pool->name = NULL;
   pool->size = num_threads;
   pool->capacity = num_threads * 2;
   pool->waiting_tasks = calloc(1, sizeof(priority_queue_t));
 
-  pool->thread_tasks = calloc(num_threads, sizeof(thread_task*));
-  pool->thread_infos = calloc(sizeof(__thread_information*) * pool->capacity, 1);
+  pool->thread_tasks = calloc(num_threads, sizeof(thread_task_t*));
+  pool->thread_infos = calloc(sizeof(__thread_information_t*) * pool->capacity, 1);
   pool->task_state_capacity = MAX_NUM_TASKS;
-  pool->task_group_states = calloc(pool->task_state_capacity, sizeof(__task_state));
+  pool->task_group_states = calloc(pool->task_state_capacity, sizeof(__task_state_t));
   pool->enable_monitoring = enable_monitoring;
 
   pthread_t* threads = malloc(sizeof(pthread_t) * pool->capacity);
@@ -34,7 +34,7 @@ thread_pool* thread_pool_create(size_t num_threads, int enable_monitoring) {
 
   for(size_t i = 0; i < pool->capacity; i++) {
     // one block per thread to reduce risk of two threads sharing the same cache line
-    __thread_information* thread_info = malloc(sizeof(__thread_information));
+    __thread_information_t* thread_info = malloc(sizeof(__thread_information_t));
     pool->thread_infos[i] = thread_info;
     thread_info->pool = pool;
     thread_info->id = i;
@@ -52,8 +52,8 @@ thread_pool* thread_pool_create(size_t num_threads, int enable_monitoring) {
    return pool;
 }
 
-thread_pool* thread_pool_create_named(size_t num_threads, const char* name, int enable_monitoring) {
-  thread_pool* pool = thread_pool_create(num_threads, enable_monitoring);
+thread_pool_t* thread_pool_create_named(size_t num_threads, const char* name, int enable_monitoring) {
+  thread_pool_t* pool = thread_pool_create(num_threads, enable_monitoring);
 
   if(name) {
     thread_pool_set_name(pool, name);
@@ -62,7 +62,7 @@ thread_pool* thread_pool_create_named(size_t num_threads, const char* name, int 
   return pool;
 }
 
-void thread_pool_free(thread_pool* pool) {
+void thread_pool_free(thread_pool_t* pool) {
     // Update all status
     for(size_t i=0; i < pool->size; ++i) {
       pool->thread_infos[i]->status = thread_status_will_terminate;
@@ -94,7 +94,7 @@ void thread_pool_free(thread_pool* pool) {
     free(pool);
 }
 
-void thread_pool_set_name(thread_pool* pool, const char* name){
+void thread_pool_set_name(thread_pool_t* pool, const char* name){
   if(pool->name) free(pool->name);
   size_t s = strlen(name);
   char* str = malloc(s+1);
@@ -102,7 +102,7 @@ void thread_pool_set_name(thread_pool* pool, const char* name){
   pool->name = str;
 }
 
-status_e thread_pool_resize(thread_pool* pool, size_t num_threads)
+status_e thread_pool_resize(thread_pool_t* pool, size_t num_threads)
 {
 	if(num_threads > pool->size)
 	{
@@ -135,7 +135,7 @@ status_e thread_pool_resize(thread_pool* pool, size_t num_threads)
 	return status_ok;
 }
 
-status_e thread_pool_enqueue_tasks(thread_task* tasks, thread_pool* pool, size_t num_tasks, task_handle* hndl) {
+status_e thread_pool_enqueue_tasks(thread_task_t* tasks, thread_pool_t* pool, size_t num_tasks, task_handle_t* hndl) {
   
   // find unused slot
   size_t ind = 0;
@@ -169,17 +169,17 @@ status_e thread_pool_enqueue_tasks(thread_task* tasks, thread_pool* pool, size_t
   return status_ok;
 }
 
-status_e thread_pool_enqueue_task(thread_task* task, thread_pool* pool, task_handle* hndl) {
+status_e thread_pool_enqueue_task(thread_task_t* task, thread_pool_t* pool, task_handle_t* hndl) {
   return thread_pool_enqueue_tasks(task, pool, 1, hndl);
 }
 
-status_e thread_pool_enqueue_tasks_wait(thread_task* tasks, thread_pool* pool, size_t num_tasks) {
+status_e thread_pool_enqueue_tasks_wait(thread_task_t* tasks, thread_pool_t* pool, size_t num_tasks) {
   // Pass all tasks except the last one to the queue
-  task_handle hndl;
+  task_handle_t hndl;
   thread_pool_enqueue_tasks(tasks, pool, num_tasks - 1, &hndl);
 
   // Execute the last tasks in the calling thread
-  thread_task* main_task = &tasks[num_tasks - 1];
+  thread_task_t* main_task = &tasks[num_tasks - 1];
   
   if(pool->enable_monitoring){
     pool->statistics->task_enqueued_count++;
@@ -200,15 +200,15 @@ status_e thread_pool_enqueue_tasks_wait(thread_task* tasks, thread_pool* pool, s
   return thread_pool_wait_for_task(pool, &hndl);
 }
 
-status_e thread_pool_wait_for_task(thread_pool* pool, task_handle* hndl) {
+status_e thread_pool_wait_for_task(thread_pool_t* pool, task_handle_t* hndl) {
   volatile unsigned* gen = &pool->task_group_states[hndl->index].generation;
   while(*gen == hndl->generation 
      && pool->task_group_states[hndl->index].task_count) {}
   return status_ok;
 }
 
-status_e thread_pool_wait_for_all(thread_pool* pool){
-  thread_task* next_task;
+status_e thread_pool_wait_for_all(thread_pool_t* pool){
+  thread_task_t* next_task;
   while((next_task = __get_next_task(pool))){
 
     if(pool->enable_monitoring){
@@ -221,8 +221,8 @@ status_e thread_pool_wait_for_all(thread_pool* pool){
       pool->statistics->wait_time += __get_time_diff(&next_task->statistics.enqueue_time, &next_task->statistics.execution_time);
       pool->statistics->complete_time += __get_time_diff(&next_task->statistics.execution_time, &next_task->statistics.complete_time);
     }
-    else 
-      __execute_task(pool, next_task);
+    else
+        __execute_task(pool, next_task);
 
   }
   for(;;){
@@ -239,7 +239,7 @@ status_e thread_pool_wait_for_all(thread_pool* pool){
 //
 
 void *__thread_main(void* args) {
-  __thread_information* thread_info = (__thread_information*)args;
+  __thread_information_t* thread_info = (__thread_information_t*)args;
 
   // Fill statistics if available
   struct timespec begin;
@@ -249,7 +249,7 @@ void *__thread_main(void* args) {
   }
 
   while(1){
-    thread_task* next_task = __get_next_task(thread_info->pool);
+    thread_task_t* next_task = __get_next_task(thread_info->pool);
     // the task has to be executed since it has been taken out of the queue
     if(next_task) {
 
@@ -297,21 +297,20 @@ void *__thread_main(void* args) {
   return (void*)0;
 }
 
-thread_task* __get_next_task(thread_pool *pool) {
-  thread_task* next_task = priority_queue_pop(pool->waiting_tasks);
+thread_task_t* __get_next_task(thread_pool_t *pool) {
+  thread_task_t* next_task = priority_queue_pop(pool->waiting_tasks);
   return next_task;
 }
 
-status_e __create_thread(__thread_information* thread_info, pthread_t* pp){
+status_e __create_thread(__thread_information_t* thread_info, pthread_t* pp){
   thread_info->status = thread_status_created;
   pthread_create(pp,NULL , &__thread_main, thread_info);
 
   return status_ok;
 }
 
-void __execute_task(thread_pool* pool, thread_task* task)
+void __execute_task(thread_pool_t* pool, thread_task_t* task)
 {
   (*task->routine)(task->args);
-    --pool->task_group_states[task->group_id].task_count;
+  --pool->task_group_states[task->group_id].task_count;
 }
-

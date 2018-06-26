@@ -1,7 +1,7 @@
 #include <check.h>
 #include <stdio.h>
 #include <math.h>
-#include "../../../include/thread_pool.h"
+#include "thread_pool.h"
 
 // Test the creation of thread pools
 START_TEST(thread_pool_create_) 

@@ -8,14 +8,14 @@ using atomic_int = std::atomic<int>;
 
 extern "C" 
 {    
-    #include "../../../include/thread_pool.h"
+    #include "thread_pool.h"
     #include "../../../include/thread_pool_monitoring.h"
 }
 
 // Test the creatrion of thread pools
 TEST(ThreadPool, Create) {
 
-    thread_pool* pool = thread_pool_create(2, 0);
+    thread_pool_t* pool = thread_pool_create(2, 0);
     EXPECT_TRUE(pool);
 
     thread_pool_free(pool);
@@ -24,7 +24,7 @@ TEST(ThreadPool, Create) {
 
 // Test the creatrion of group Ids of thread pools
 TEST(ThreadPool, Name) {
-    thread_pool* pool = thread_pool_create_named(2, "ThreadPool", 0);
+    thread_pool_t* pool = thread_pool_create_named(2, "ThreadPool", 0);
     EXPECT_TRUE(pool);
     ASSERT_STREQ(pool->name, "ThreadPool");
 
@@ -58,7 +58,7 @@ void work(void* args)
 
 TEST(ThreadPool, Resize) {
 
-    thread_pool* pool = thread_pool_create(4, 0);
+    thread_pool_t* pool = thread_pool_create(4, 0);
     EXPECT_TRUE(pool);
 
     status_e status = thread_pool_resize(pool, 6);
@@ -74,8 +74,8 @@ TEST(ThreadPool, Resize) {
 TEST(ThreadPool, WAIT){
 
     int test[] = {1000000, 1000000, 1000000, 1000000, 1000000, 1000000 };
-    thread_pool* pool = thread_pool_create(2, 0);
-    thread_task tasks[6];
+    thread_pool_t* pool = thread_pool_create(2, 0);
+    thread_task_t tasks[6];
 
     for(int i = 0; i < 6; i++){
         tasks[i].args = (void*)&test[i];
@@ -97,8 +97,8 @@ TEST(ThreadPool, WAIT){
 TEST(ThreadPool, WAIT_FOR_ALL){
 
     int test[] = {1000000, 1000000, 1000000, 1000000, 1000000, 1000000 };
-    thread_pool* pool = thread_pool_create(2, 0);
-    thread_task tasks[6];
+    thread_pool_t* pool = thread_pool_create(2, 0);
+    thread_task_t tasks[6];
 
     for(int i = 0; i < 6; i++){
         tasks[i].args = (void*)&test[i];
@@ -126,11 +126,11 @@ void LIVE_RESIZE_work(void* args)
 	*res = sum;
 }
 
-Test(ThreadPool, LIVE_RESIZE){
-	thread_pool* pool = thread_pool_create(2, 0);
-	task_handle hndl;
+TEST(ThreadPool, LIVE_RESIZE){
+	thread_pool_t* pool = thread_pool_create(2, 0);
+	task_handle_t hndl;
 	const int numThreads = 1 << 11;
-	thread_task tasks[numThreads];
+	thread_task_t tasks[numThreads];
 	int results[numThreads];
 	for(int i = numThreads-1; i >= 0; --i){
 		results[i] = i;
@@ -140,7 +140,7 @@ Test(ThreadPool, LIVE_RESIZE){
 		if(i == 0) tasks[i].priority = 1;
 		thread_pool_enqueue_task(&tasks[i], pool, &hndl);
 		if( i == numThreads * 1 / 3) {
-			ASSERT_EQ(pool->size, 2);
+			ASSERT_EQ(pool->size, 3);
 			thread_pool_resize(pool, 4);
 			ASSERT_EQ(pool->size, 4);
 		}
@@ -150,12 +150,12 @@ Test(ThreadPool, LIVE_RESIZE){
 			ASSERT_EQ(pool->size, 3);
 		}
 		if(i == numThreads * 3 / 4) {
-			ASSERT_EQ(pool->size, 3);
-			thread_pool_resize(pool,2);
 			ASSERT_EQ(pool->size, 2);
+			thread_pool_resize(pool,4);
+			ASSERT_EQ(pool->size, 4);
 		}
 	}
-	ASSERT_EQ(pool->size, 2);
+	ASSERT_EQ(pool->size, 4);
 
 	thread_pool_wait_for_all(pool);
 	thread_pool_free(pool);
@@ -172,8 +172,8 @@ Test(ThreadPool, LIVE_RESIZE){
 TEST(ThreadPool, TASK_STATISTICS){
 
     int test[] = {1000000, 1000000, 1000000, 1000000, 1000000, 1000000 };
-    thread_pool* pool = thread_pool_create(2, 1);
-    thread_task tasks[6];
+    thread_pool_t* pool = thread_pool_create(2, 1);
+    thread_task_t tasks[6];
 
     for(int i = 0; i < 6; i++){
         tasks[i].args = (void*)&test[i];
@@ -197,8 +197,8 @@ TEST(ThreadPool, TASK_STATISTICS){
 TEST(ThreadPool, POOL_STATISTICS){
 
     int test[] = {1000000, 1000000, 1000000, 1000000, 1000000, 1000000 };
-    thread_pool* pool = thread_pool_create(2, 1);
-    thread_task tasks[6];
+    thread_pool_t* pool = thread_pool_create(2, 1);
+    thread_task_t tasks[6];
     thread_pool_stats pool_stats;
 
     for(int i = 0; i < 6; i++){
@@ -223,8 +223,8 @@ TEST(ThreadPool, POOL_STATISTICS){
 TEST(ThreadPool, THREAD_STATISTICS){
 
     int test[] = {1000000, 1000000, 1000000, 1000000, 1000000, 1000000 };
-    thread_pool* pool = thread_pool_create(2, 1);
-    thread_task tasks[6];
+    thread_pool_t* pool = thread_pool_create(2, 1);
+    thread_task_t tasks[6];
     thread_stats thread_stats;
 
     for(int i = 0; i < 6; i++){

@@ -55,7 +55,7 @@ We divide our structure into 3 main structs containing relavent information for 
 *This may also include an Id which can be given by the user, currently only assigned by the threadpool*
 First the __thread_task__ structure:
 ```
-struct thread_task {
+struct thread_task_t {
     void *arg
     const pthread_attr_t *attr
     void *(*function)
@@ -66,7 +66,7 @@ This structure is intended to be used in src like bolster.h instead of the curre
 Second the internal __\_\_enqueued_task structure__:
 ```
 struct __enqueued_task {
-    thread_task* thread
+    thread_task_t* thread
     **whatever** id
 }
 ```
@@ -92,7 +92,7 @@ Creates an instance of the thread pool. This will create an array with num_threa
 
 ---
 
-### ```status_e gecko_pool_enqueue_tasks(thread_task* tasks)```
+### ```status_e gecko_pool_enqueue_tasks(thread_task_t* tasks)```
 Params:
 - tasks - Pointer to array of tasks which should be dispatched
 
@@ -100,7 +100,7 @@ Creates internally a group id and assigns this id to all tasks in the array. The
 
 ---
 
-### ```status_e gecko_pool_enqueue_task(thread_task* task)```
+### ```status_e gecko_pool_enqueue_task(thread_task_t* task)```
 Params:
 - task - Pointer to one task which should be dispatched
 
