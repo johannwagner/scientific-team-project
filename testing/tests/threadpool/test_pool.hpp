@@ -1,6 +1,7 @@
 #include <gtest/gtest.h>
 #include <atomic>
 #include <cmath>
+#include <fstream>
 
 // https://gcc.gnu.org/bugzilla/show_bug.cgi?id=60932
 using atomic_int = std::atomic<int>;
@@ -194,30 +195,40 @@ TEST(ThreadPool, TASK_STATISTICS){
     thread_pool_free(pool);
 }
 
-TEST(ThreadPool, POOL_STATISTICS){
+TEST(ThreadPool, POOL_STATISTICS) {
 
-    int test[] = {1000000, 1000000, 1000000, 1000000, 1000000, 1000000 };
-    thread_pool_t* pool = thread_pool_create(2, 1);
-    thread_task_t tasks[6];
-    thread_pool_stats pool_stats;
+    std::ofstream stats;
+    stats.open("Statistics/pool_avg.csv");
+    stats << "Iteration Avg.CompletionTime Avg.WaitingTime" << "\n";
+    for (size_t counter = 0; counter < 10; ++counter) {
 
-    for(int i = 0; i < 6; i++){
-        tasks[i].args = (void*)&test[i];
-        tasks[i].routine = work;
-        thread_pool_enqueue_task(&tasks[i], pool, NULL);
+        int test[] = {1000000, 1000000, 1000000, 1000000, 1000000, 1000000};
+        thread_pool_t *pool = thread_pool_create(counter, 1);
+        thread_task_t tasks[6];
+        thread_pool_stats pool_stats;
+
+        for (int i = 0; i < 6; i++) {
+            tasks[i].args = (void *) &test[i];
+            tasks[i].routine = work;
+            thread_pool_enqueue_task(&tasks[i], pool, NULL);
+        }
+
+        pool_stats = thread_pool_get_stats(pool);
+        ASSERT_EQ(pool_stats.task_enqueued_count, 6);
+        ASSERT_NE(pool_stats.task_complete_count, 6);
+
+        thread_pool_wait_for_all(pool);
+
+        pool_stats = thread_pool_get_stats(pool);
+        ASSERT_EQ(pool_stats.task_complete_count, pool_stats.task_enqueued_count);
+
+        //save to csv
+        stats << counter << pool_stats.avg_complete_time << " " << pool_stats.avg_wait_time << "\n";
+
+
+        thread_pool_free(pool);
     }
-
-    pool_stats = thread_pool_get_stats(pool);
-    ASSERT_EQ(pool_stats.task_enqueued_count, 6);
-    ASSERT_NE(pool_stats.task_complete_count, 6);
-
-    thread_pool_wait_for_all(pool);
-
-    pool_stats = thread_pool_get_stats(pool);
-    ASSERT_EQ(pool_stats.task_complete_count, pool_stats.task_enqueued_count);
-    std::cout << "Avg wait time (milis) " << pool_stats.avg_wait_time / 1000000.0 <<  " Avg complete time (milis) " << pool_stats.avg_complete_time / 1000000.0 << std::endl;
-
-    thread_pool_free(pool);
+    stats.close();
 }
 
 TEST(ThreadPool, THREAD_STATISTICS){
@@ -233,11 +244,17 @@ TEST(ThreadPool, THREAD_STATISTICS){
     }
 
     thread_pool_enqueue_tasks_wait(tasks, pool, 6);
-
-    thread_stats = thread_pool_get_thread_stats(pool, 0);
     //ASSERT_GT(thread_stats.task_count, 0);
-    std::cout << "busy time for first thread (milis) " << thread_stats.busy_time / 1000000.0 << std::endl;
-    std::cout << "idle time for first thread (milis) " << thread_stats.idle_time / 1000000.0 << std::endl;
+
+    //save to csv
+    std::ofstream stats;
+    stats.open("Statistics/threads.csv");
+
+    for (size_t i=0; i < pool->size; ++i){
+        thread_stats = thread_pool_get_thread_stats(pool, i);
+        stats << thread_stats.busy_time << ", " <<thread_stats.idle_time << "\n";
+    }
+    stats.close();
 
     thread_pool_free(pool);
 }

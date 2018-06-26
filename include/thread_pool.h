@@ -44,7 +44,7 @@ struct __thread_information_t;
 
 
 typedef struct __task_state_t{
-	atomic_int task_count; //< remaining tasks in this group
+	atomic_int task_count; // remaining tasks in this group
 	unsigned generation;
 } __task_state_t;
 
@@ -72,7 +72,6 @@ typedef struct __thread_information_t {
 	thread_pool_t* pool;
 	size_t id;
 	atomic_int status;
-	struct timespec creation; // cannot be removed, leads to segfault
 	thread_stats* statistics;
 } __thread_information_t;
 

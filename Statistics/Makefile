@@ -1,0 +1,2 @@
+charts:
+	gnuplot charts.gnu
