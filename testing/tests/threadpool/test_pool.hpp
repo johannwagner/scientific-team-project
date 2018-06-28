@@ -2,6 +2,7 @@
 #include <atomic>
 #include <cmath>
 #include <fstream>
+#include <signal.h>
 
 // https://gcc.gnu.org/bugzilla/show_bug.cgi?id=60932
 using atomic_int = std::atomic<int>;
@@ -13,8 +14,8 @@ extern "C"
     #include "../../../include/thread_pool_monitoring.h"
 }
 
-// Test the creatrion of thread pools
-TEST(ThreadPool, Create) {
+// Test the creation of thread pools
+TEST(ThreadPool, CREATE) {
 
     thread_pool_t* pool = thread_pool_create(2, 0);
     EXPECT_TRUE(pool);
@@ -23,18 +24,13 @@ TEST(ThreadPool, Create) {
 
 }
 
-// Test the creatrion of group Ids of thread pools
-TEST(ThreadPool, Name) {
+// Test the creation of group Ids of thread pools
+TEST(ThreadPool, NAME) {
     thread_pool_t* pool = thread_pool_create_named(2, "ThreadPool", 0);
     EXPECT_TRUE(pool);
     ASSERT_STREQ(pool->name, "ThreadPool");
 
     thread_pool_free(pool);
-}
-
-void basicTask (void* args) {
-    int* number = (int*) args;
-    std::cout << "number has value: " <<  *number << std::endl;
 }
 
 void work(void* args)
@@ -51,13 +47,13 @@ void work(void* args)
 
 	for(; *res > 0; (*res)--)
     {
-        
+
     }
 
     //std::cout << "Work finished" << std::endl;
 }
 
-TEST(ThreadPool, Resize) {
+TEST(ThreadPool, RESIZE) {
 
     thread_pool_t* pool = thread_pool_create(4, 0);
     EXPECT_TRUE(pool);
@@ -97,7 +93,7 @@ TEST(ThreadPool, WAIT){
 
 TEST(ThreadPool, WAIT_FOR_ALL){
 
-    int test[] = {1000000, 1000000, 1000000, 1000000, 1000000, 1000000 };
+    int test[] = { 1000000, 1000000, 1000000, 1000000, 1000000, 1000000 };
     thread_pool_t* pool = thread_pool_create(2, 0);
     thread_task_t tasks[6];
 
@@ -197,25 +193,29 @@ TEST(ThreadPool, TASK_STATISTICS){
 
 TEST(ThreadPool, POOL_STATISTICS) {
 
-    std::ofstream stats;
-    stats.open("Statistics/pool_avg.csv");
-    stats << "Iteration Avg.CompletionTime Avg.WaitingTime" << "\n";
-    for (size_t counter = 0; counter < 10; ++counter) {
+    signal(SIGSEGV, __sig_seg);
 
+//    std::ofstream stats;
+//    stats.open("Statistics/pool_avg.csv");
+//    stats << "NumThreads Avg.CompletionTime Avg.WaitingTime" << "\n";
+    const int number_task = 1000;
+    for (size_t counter = 2; counter < 32; ++counter) {
+        counter = 32;
         int test[] = {1000000, 1000000, 1000000, 1000000, 1000000, 1000000};
         thread_pool_t *pool = thread_pool_create(counter, 1);
-        thread_task_t tasks[6];
+        thread_task_t tasks[number_task];
         thread_pool_stats pool_stats;
 
-        for (int i = 0; i < 6; i++) {
+
+        for (int i = 0; i < number_task; i++) {
             tasks[i].args = (void *) &test[i];
             tasks[i].routine = work;
             thread_pool_enqueue_task(&tasks[i], pool, NULL);
         }
 
         pool_stats = thread_pool_get_stats(pool);
-        ASSERT_EQ(pool_stats.task_enqueued_count, 6);
-        ASSERT_NE(pool_stats.task_complete_count, 6);
+        ASSERT_EQ(pool_stats.task_enqueued_count, number_task);
+        ASSERT_NE(pool_stats.task_complete_count, number_task);
 
         thread_pool_wait_for_all(pool);
 
@@ -223,12 +223,11 @@ TEST(ThreadPool, POOL_STATISTICS) {
         ASSERT_EQ(pool_stats.task_complete_count, pool_stats.task_enqueued_count);
 
         //save to csv
-        stats << counter << pool_stats.avg_complete_time << " " << pool_stats.avg_wait_time << "\n";
-
+//        stats << counter << " " << pool_stats.avg_complete_time << " " << pool_stats.avg_wait_time << "\n";
 
         thread_pool_free(pool);
     }
-    stats.close();
+//    stats.close();
 }
 
 TEST(ThreadPool, THREAD_STATISTICS){
@@ -250,9 +249,11 @@ TEST(ThreadPool, THREAD_STATISTICS){
     std::ofstream stats;
     stats.open("Statistics/threads.csv");
 
+    stats << "BusyTime IdleTime" << "\n";
+
     for (size_t i=0; i < pool->size; ++i){
         thread_stats = thread_pool_get_thread_stats(pool, i);
-        stats << thread_stats.busy_time << ", " <<thread_stats.idle_time << "\n";
+        stats << thread_stats.busy_time << " " <<thread_stats.idle_time << "\n";
     }
     stats.close();
 

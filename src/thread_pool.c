@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
+#include <signal.h>
 #include "benchmark_switches.h"
 
 static inline void __execute_task();
@@ -309,8 +310,24 @@ status_e __create_thread(__thread_information_t* thread_info, pthread_t* pp){
   return status_ok;
 }
 
+void* faulty;
+size_t num;
+
 void __execute_task(thread_pool_t* pool, thread_task_t* task)
 {
-  (*task->routine)(task->args);
-  --pool->task_group_states[task->group_id].task_count;
+    faulty = task->routine;
+    num++;
+    (*task->routine)(task->args);
+    --pool->task_group_states[task->group_id].task_count;
+}
+
+void __sig_seg(int sig) {
+    if (sig != SIGSEGV) {
+        return;
+    }
+    else {
+        printf("%p \n", faulty);
+        printf("occured after: %li", num);
+        exit(1);
+    }
 }

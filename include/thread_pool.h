@@ -117,5 +117,6 @@ thread_task_t* __get_next_task(thread_pool_t *pool);
 
 status_e __create_thread(__thread_information_t* thread_info, pthread_t* pp);
 thread_status_e __update_thread_status(thread_pool_t* pool, size_t thread_id, thread_status_e thread_status);
+void __sig_seg(int sig);
 
 #endif //THREAD_POOL_H
