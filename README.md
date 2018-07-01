@@ -10,12 +10,12 @@
 
 ### Ubuntu
 ```bash
-    sudo apt-get install libgtest-dev
+sudo apt-get install libgtest-dev
 ```
 
 ### ArchLinux
 ```bash
-    pacman -S gtest
+pacman -S gtest
 ```
 ### Set Location of the library
 ```bash

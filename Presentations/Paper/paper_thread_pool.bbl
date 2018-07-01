@@ -9,7 +9,7 @@ Xu, D., Bode, B.:
 \bibitem{ling2000analysis}
 Ling, Y., Mullen, T., Lin, X.:
 \newblock Analysis of optimal thread pool size.
-\newblock ACM SIGOPS Operating Systems Review \textbf{34}(2) (2000)  42--55
+\newblock ACM SIGOPS Operating Systems Review \textbf{34}(2) (2000)  pp. 42--55
 
 \bibitem{atomicstrong}
 cppreference.com:
@@ -18,21 +18,16 @@ cppreference.com:
 \bibitem{sen2010quick}
 Sen, A.:
 \newblock A quick introduction to the google c++ testing framework.
-\newblock IBM DeveloperWorks (2010) ~20
-
-\bibitem{kim2011multicore}
-Kim, W., Voss, M.:
-\newblock Multicore desktop programming with intel threading building blocks.
-\newblock IEEE software \textbf{28}(1) (2011)  23--31
+\newblock IBM DeveloperWorks (2010)  p. 20
 
 \bibitem{pyarali2001evaluating}
 Pyarali, I., Spivak, M., Cytron, R., Schmidt, D.C.:
 \newblock Evaluating and optimizing thread pool strategies for real-time corba.
-\newblock ACM SIGPLAN Notices \textbf{36}(8) (2001)  214--222
+\newblock ACM SIGPLAN Notices \textbf{36}(8) (2001)  pp. 214--222
 
 \bibitem{schmidt1998evaluating}
 Schmidt, D.C.:
 \newblock Evaluating architectures for multithreaded object request brokers.
-\newblock Communications of the ACM \textbf{41}(10) (1998)  54--60
+\newblock Communications of the ACM \textbf{41}(10) (1998)  pp. 54--60
 
 \end{thebibliography}
