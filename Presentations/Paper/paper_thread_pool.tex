@@ -11,7 +11,7 @@
     T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
 \begin{document}
 
-\title{Thread Pool in GeckoDB/BOLSTER - Implementing a Thread Pool for a high performance Database System \\
+\title{Thread Pool in GeckoDB/BOLSTER - Implementing a Thread Pool for a High Performance Database System \\
 }
 
 \author{
@@ -24,7 +24,24 @@
 \maketitle
 
 \begin{abstract}
-Processing tasks in parallel is used in nearly all applications to keep up with the requirements of modern software systems. However, the implementation of parallel processing can reach from spawning dozens of threads to reuse threads in thread pools. In this paper, we show an implementation of a thread pool to process independent tasks in parallel including the waiting for a set of processed tasks. We also compare the thread pool implementation against a baseline. The evaluation of the thread pool shows, that designing and implementing a thread pool is a balancing act between generalization of tasks and the processing performance. Additionally, we show that the task and thread pool configuration depending on the use case has a high impact on the thread pool performance.
+        Processing tasks in parallel is used in nearly all applications to keep
+        up with the requirements of modern software systems. However, the
+        current implementation of parallel processing in GeckoDB requires
+        spawning many short-lived threads that execute a single task and then
+        terminate. This creates a lot of overhead since the threads are not
+        being reused. To counter this effect we implemented a thread pool to be
+        used in combination with GeckoDB to reduce the additional time required
+        to create and close thousands of threads. In this paper, we show our
+        implementation of a thread pool to process independent tasks in parallel
+        including the waiting for a set of processed tasks. We also compare the
+        thread pool implementation against the current one. The evaluation of
+        the thread pool shows, that designing and implementing a thread pool is
+        a balancing act between generalization of tasks and the processing
+        performance. Additionally, we show that the task and thread pool configuration
+        depending on the use case has a high impact on the thread
+        pool performance. At the end of our evalutation we rate the implementation a
+        success because we fulfilled all given constraints and generally reduce
+        overhead compared to creating and spawning threads individually.
 \end{abstract}
 
 \begin{IEEEkeywords}
@@ -32,14 +49,14 @@ Thread Pool, GeckoDB, BOLSTER
 \end{IEEEkeywords}
 
 \section{Introduction}
-Since the amount of data that is stored and processed by modern database systems is growing fast, sequential data processing as only possibility is inconceivable. Applications have to process data in parallel to reach sufficient throughput to fulfil appropriate requirements. 
+Since the amount of data that is stored and processed by modern database systems is growing fast, sequential data processing as only possibility is inconceivable. Applications have to process data in parallel to reach sufficient throughput to fulfil appropriate requirements.
 
-Parallel data processing can be achieved by different approaches, like instruction and data parallelism or multi threading. In this paper, we focus on multi threading by implementing a thread pool for the graph database system GeckoDB. The thread pool will be integrated into BOLSTER, a high performance library for parallel execution of primitives like for or filter on large data sets. In the current implementation, BOLSTER creates a fix number of threads for each call of a primitive. This approach is called \emph{thread-per-request}. Since many primitives are executed at the same time, a couple of drawbacks arise from this implementation. 
+Parallel data processing can be achieved by different approaches, like instruction and data parallelism or multi threading. In this paper, we focus on multi threading by implementing a thread pool for the graph database system GeckoDB. The thread pool will be integrated into BOLSTER, a high performance library for parallel execution of primitives like for or filter on large data sets. In the current implementation, BOLSTER creates a fix number of threads for each call of a primitive. This approach is called \emph{thread-per-request}. Since many primitives are executed at the same time, a couple of drawbacks arise from this implementation.
 First of all, the creation of threads comes along with overhead like stack initialisation and memory allocation. Secondly, creating a huge number of threads simultaneously may lead to large context switch overhead of the scheduler. Additionally, debugging and profiling applications that create many threads during runtime is 	time-consuming.
 
 To overcome these drawbacks, we integrate an optimised thread pool in BOLSTER. Along with the implementation, we measure the performance of the primitives to determine the thread pool overhead. Additionally, we measure metrics like \emph{waiting and busy time} of threads to evaluate correct thread pool sizes for the considered use cases. In this work we make the following contributions:
 \begin{itemize}
-	\item We describe our design and implementation of the thread pool 
+	\item We describe our design and implementation of the thread pool
 	\item We evaluate the possibility to wait for a group of task in the calling thread
 	\item We compare our thread pool against the existing implementation in BOLSTER
 	\item We measure and evaluate statistics for threads, tasks and the thread pool
@@ -56,36 +73,36 @@ In this section, we define our configuration of tasks that are processed by the 
 \end{figure*}
 
 \subsection{Task Configuration}
-We define a Task as a structure containing data that has to be processed and an operation that has to be executed on the data. In this work, we define tasks as \emph{independent}, which means tasks do not have dependencies on other tasks and can be processed independently. Furthermore, we expect the data passed to two tasks are stored in different memory locations. Consequently, while executing the task operation, threads do not access the same memory locations. 
+We define a Task as a structure referencing data that has to be processed and an operation that has to be executed on the data. In this work, we define tasks as \emph{independent}, which means tasks do not have dependencies on other tasks and can be processed independently. Furthermore, we expect the data passed to two tasks are stored in different memory locations. Consequently, while executing the task operation, threads do not access the same memory locations.
 
-Each task can be enqueued with a priority. The priority zero is the highest and the task will be processed by the next free thread. The higher the priority of a task is, the further it is placed behind in the queue. Additionally, we only consider not preemtable tasks. Once a task is assigned to a thread, the thread will finish the operation of the task before getting a new one. 
+Each task can be enqueued with a priority. The priority zero is the highest and the task will be processed by the next free thread. The higher the priority of a task is, the further it is placed behind in the queue. Additionally, we only consider not preemtable tasks. Once a task is assigned to a thread, the thread will finish the operation of the task before getting a new one.
 
 \subsection{Synchronizing Memory Access from Threads}
-Parallelism with multi threading works great as long as each thread works on a separate memory location. During task scheduling, the scheduler has to know the state each thread has. This can be solved with signal handling or by writing the current thread state into main memory. In this work, we implement the second approach to avoid having another thread that only schedules tasks to other threads. 
+Parallelism with multi threading works great as long as each thread works on a separate memory location. During task scheduling, the scheduler has to know the state each thread has. This can be solved with signal handling or by writing the current thread state into main memory. In this work, we implement the second approach to avoid having another thread that only schedules tasks to other threads.
 
 Thread safe access to memory can be achieved by different approaches. Firstly, a mutex thread can manage the access for multiple other threads. Secondly, atomic operations ensure the safe access from different threads to the same memory. We use both approaches for different parts of the thread pool. Since using a mutex thread can decrease access performance, we decided to execute atomic operations on memory containing the thread state informations. We use a mutex thread to synchronize the enqueueing of tasks into the priority queue.
 
 \section{Implementation}
-In this section, we describe in detail the design and implementation of our thread pool. We show how tasks are enqueued regarding their priority and how the waiting for tasks is implemented. Additionally, we state our thread metrics and show how they are integrated in the thread pool design. 
+In this section, we describe in detail the design and implementation of our thread pool. We show how tasks are enqueued regarding their priority and how the waiting for tasks is implemented. Additionally, we state our thread metrics and show how they are integrated in the thread pool design.
 
 \subsection{Architecture of the Thread Pool}
-Compared to simply create threads on demand, managing threads in a pool comes along with memory and CPU overhead. The thread pool must know information about the state each thread has and his assigned task. To measure metrics of threads and tasks, additional memory for threads and tasks is required. 
+Compared to simply create threads on demand, managing threads in a pool comes along with memory and CPU overhead. The thread pool must know information about the state each thread has and his assigned task. To measure metrics of threads and tasks, additional memory for threads and tasks is required.
 
-In Figure 1, we show our design of the whole thread pool system, containing the thread pool itself, the task priority queue and the performance monitoring. Since measuring performance metrics lead to memory and CPU overhead, we decided to exclude the performance measurements from the thread pool to make it optional. The performance monitoring can be activated as a boolean parameter to the thread pool create functions. Consequently, in the target database system, the designers can decide for each thread pool instance, if performance monitoring should be applied. 
+In Figure 1, we show our design of the whole thread pool system, containing the thread pool itself, the task priority queue and the performance monitoring. Since measuring performance metrics lead to memory and CPU overhead, we decided to exclude the performance measurements from the thread pool to make it optional. The performance monitoring can be activated as a boolean parameter to the thread pool create functions. Consequently, in the target database system, the designers can decide for each thread pool instance, if performance monitoring should be applied.
 
 The thread pool system includes an array of threads and a priority queue to store the passed tasks. We decided to implement the thread pool using the POSIX thread library to provide the thread pool for multiple operation systems like Linux and Unix. Additionally, we avoid using custom compiler flags to ensure that the thread pool can be compiled with different compilers. The thread pool itself contains a variable number of threads. Since Xu et al. \cite{xu2004performance} and Ling et al. \cite{ling2000analysis} show the importance of accurate thread pool size, we add a resizing function for our thread pool, which enables to change the amount of threads at runtime.
 
 \begin{table*}[htbp]
 	\caption{Functions provided by the thread pool to process tasks}
 	\begin{center}
-		\begin{tabular}{ c c }
+		\begin{tabular}{ l l }
 			\hline
 			\textbf{Function Name}&\textbf{Explanation}\\
 			\hline
 			thread\_pool\_enqueue\_task & Enqueue task with optional handle \\
 			thread\_pool\_enqueue\_tasks & Enqueue tasks with optional handle \\
 			thread\_pool\_wait\_for\_task & Waits until the tasks referenced by the handle are completed. \\
-			thread\_pool\_enqueue\_tasks\_wait & Enqueue tasks and wait until they are finished. The main thread also participates in task execution\\ 
+			thread\_pool\_enqueue\_tasks\_wait & Enqueue tasks and wait until they are finished. The main thread also participates in task execution\\
 			thread\_pool\_wait\_for\_all & Wait until all enqueued tasks are finished. The main thread also participates in task execution \\ \hline
 		\end{tabular}
 		\label{tab1}
@@ -98,9 +115,9 @@ Threads and tasks are two major entities in the thread pool system. As we can ob
 Each assigned task contains a function pointer to a routine and a pointer to data. We implemented the task queue as a generic priority queue that uses a mutex thread to enqueue tasks threadsafe. Every time a new task is enqueued to the task queue, two scenarios can occur. If the new task has a priority, it is placed in the right slot of the task queue regarding its priority and the subsequent tasks are relocated. If the  new task has no priority, it is appended to the end of the queue. Furthermore, tasks can refer to a handle, which is used by the thread pool to wait for a specific amount of tasks.
 
 \subsection{Processing Tasks}
-Processing tasks in a thread pool is a balancing act between generalization the of tasks and the performance of their execution. Therefore, we provide a set of functions to process task in the thread pool to match different requirements of BOLSTER. In Table 1, we show the functions provided by our thread pool to process tasks. One of the requirements of BOLSTER is waiting until a set of tasks is finished. To achieve the same performance as the baseline implementation reaches, we let the main thread first participate in the execution of the tasks and then wait until all tasks with the same handle are finished. 
+Processing tasks in a thread pool is a balancing act between generalization the of tasks and the performance of their execution. Therefore, we provide a set of functions to process task in the thread pool to match different requirements of BOLSTER. In Table 1, we show the functions provided by our thread pool to process tasks. One of the requirements of BOLSTER is waiting until a set of tasks is finished. To achieve the same performance as the baseline implementation reaches, we let the main thread first participate in the execution of the tasks and then wait until all tasks with the same handle are finished.
 
-To show the processing of tasks, we consider the function \emph{thread\_pool\_enqueue\_tasks\_wait}. In Figure 2, we show the flow of task enqueueing and execution in the thread pool system using this function. In the first step, tasks are passed as a parameter to the enqueue function provided by the thread pool. The tasks have to be created before passing and later on freed after processing by the calling function.  We provide different functions to enqueue a single task or an array of tasks. 
+To show the processing of tasks, we consider the function \emph{thread\_pool\_enqueue\_tasks\_wait}. In Figure 2, we show the flow of task enqueueing and execution in the thread pool system using this function. In the first step, tasks are passed as a parameter to the enqueue function provided by the thread pool. The tasks have to be created before passing and later on freed after processing by the calling function.  We provide different functions to enqueue a single task or an array of tasks.
 
 In the next step, the tasks will be enqueued into the priority queue of the thread pool. Before enqueueing, the function \emph{thread\_pool\_enqueue\_tasks\_wait} creates a handle and links all tasks to it. After enqueueing the tasks to the priority queue, the waiting threads in the thread pool pop the enqueued tasks from the priority queue and execute the routine of the task. This happens asynchronously to the calling function and therefore is not considered as an own step of the process. The calling thread gets one of the passed tasks and processes it. After finishing the task, the calling thread waits until all other tasks referring to the created handle are finished and then returns to the calling function. In the next section, we show the waiting for tasks with handles in detail.
 
@@ -111,15 +128,15 @@ In the next step, the tasks will be enqueued into the priority queue of the thre
 \end{figure}
 
 \subsection{Waiting for Tasks}
-As mentioned before, the thread pool provides the functionality to let the calling function participate in the task execution and wait until all passed tasks are processed. To wait for a set of tasks, it is not sufficient to look firstly in the priority queue for the tasks and then in the state of the thread pool, since popping tasks out of the queue is not an atomic operation. Consequently, tasks can have a state between being enqueued in the queue and being executed by a thread. 
+As mentioned before, the thread pool provides the functionality to let the calling function participate in the task execution and wait until all passed tasks are processed. To wait for a set of tasks, it is not sufficient to look firstly in the priority queue for the tasks and then in the state of the thread pool, since popping tasks out of the queue is not an atomic operation. Consequently, tasks can have a state between being enqueued in the queue and being executed by a thread.
 
-To solve this problem, we implement the waiting for a set of tasks using a slotmap. In Figure 3, we show the concept of our slotmap. During the enqueueing process of tasks, a set of tasks is mapped to a slot in the slotmap. Each slot contains a number of open tasks to be finished and a generation counter. We name the number of open task \emph{openTaskCount} and the generation counter \emph{genCount}. Every time a set of tasks is enqueued, a slot with $openTaskCount = 0$ is selected and the \emph{genCount} increases. Every time a thread finishes a task, the $openTaskCount$ of the referred slot is decreased. As mentioned before, multiple tasks can refer to a single handle. This handle also refers to a slot and has additionally assigned a generation value. The waiting algorithm loops over the following conditions before returning to the calling function: It checks if the number of open tasks is zero or if the generation counter of this slot has changed. If one of these conditions is true, the waiting algorithm returns to the calling function.
+To solve this problem, we implement the waiting for a set of tasks using a slot-map. In Figure 3, we show the concept of our slot-map. During the enqueueing process of tasks, a set of tasks is mapped to a slot in the slot-map. Each slot contains a number of open tasks to be finished and a generation counter. We name the number of open task \emph{openTaskCount} and the generation counter \emph{genCount}. Every time a set of tasks is enqueued, a slot with $openTaskCount = 0$ is selected and the \emph{genCount} increases. Every time a thread finishes a task, the $openTaskCount$ of the referred slot is decreased. As mentioned before, multiple tasks can refer to a single handle. This handle also refers to a slot and has additionally assigned a generation value. The waiting algorithm loops over the following conditions before returning to the calling function: It checks if the number of open tasks is zero or if the generation counter of this slot has changed. If one of these conditions is true, the waiting algorithm returns to the calling function.
 
 To clarify the procedure of the waiting algorithm, we consider the second slot in Figure 3. The tasks $10, 12, $ and $13$ as well has the first handle refer to this slot. Consequently, these tasks were enqueued referring to the first handle. Before any of the three tasks is processed, the slot has the following state: $openTaskCount = 3$ and $genCount =  2$. Since the waiting thread does not know when tasks are executed due to the asynchronous behaviour, the waiting algorithm starts looping as long as the following condition is true: $openTaskCount \neq 0$ \&\& $genCount = 2$. For each finished task, $openTaskCount$ is decreased. It is not sufficient to check only $openTaskCount \neq 0$, since the slot can be reused before the waiting algorithms noticed that $openTaskCount = 0$. Consequently, we check if the slot stays on the same generation. If the slot is reused, $genCount$ increases and the second part of the condition returns false.
 
 \begin{figure}
 	\includegraphics[width=0.4\textwidth]{img/waitingconcept.png}
-	\caption{Concept of waiting for tasks using a slotmap}
+	\caption{Concept of waiting for tasks using a slot-map}
 	\label{fig2}
 \end{figure}
 
@@ -132,12 +149,12 @@ As mentioned before, accessing the same memory location from different threads m
 The performance monitoring component of the thread pool system is responsible for collecting data about threads, tasks, and the thread pool instance. We will use the information collected in this component for analysis and performance optimization in later stages. As mentioned before, the performance monitoring is an optional component, since evaluating the following statistics can reduce the execution performance of our thread pool. We divide the collected statistics into the sections \emph{task statistics}, \emph{thread statistics}, and \emph{thread pool statistics}.
 
 \subsubsection{Task Statistics}
-Collecting statistics about the time tasks spend in the priority queue or during the execution is useful to tune the thread pool configuration for better performance results. In Table \ref{tab2} we show the statistics that are collected for each task. 
+Collecting statistics about the time tasks spend in the priority queue or during the execution is useful to tune the thread pool configuration for better performance results. In Table \ref{tab2} we show the statistics that are collected for each task.
 
 \begin{table}[htbp]
 	\caption{Task statistics with their internal names and descriptions}
 	\begin{center}
-		\begin{tabular}{ c c }
+		\begin{tabular}{ l l }
 			\hline
 			\textbf{Statistic name}&\textbf{Description}\\
 			\hline
@@ -153,12 +170,12 @@ Collecting statistics about the time tasks spend in the priority queue or during
 How long a task waits in the queue before being executed is a good metric to adjust task priority or the thread pool size. For example, if an enqueued task with priority 0 still has a large difference between \emph{enqueue\_time} and \emph{execution\_time}, the thread pool size may be too small. Otherwise, if a large number of tasks with low priority have small differences between \emph{enqueue\_time} and \emph{execution\_time}, this may indicate that the thread pool size is too large. A better indicator of not optimized thread pool sizes are statistics per thread.
 
 \subsubsection{Thread Statistics}
-As mentioned before, adjusting the thread pool size based on task statistics may not be very precise. Consequently, collecting statistics per thread is necessary for a good evaluation of the relation between tasks and threads. In Table \ref{tab3}, we show our statistics collected for each thread in a thread pool instance. 
+As mentioned before, adjusting the thread pool size based on task statistics may not be very precise. Consequently, collecting statistics per thread is necessary for a good evaluation of the relation between tasks and threads. In Table \ref{tab3}, we show our statistics collected for each thread in a thread pool instance.
 
 \begin{table}[htbp]
 	\caption{Thread statistics with their internal names and descriptions}
 	\begin{center}
-		\begin{tabular}{ c c }
+		\begin{tabular}{ l l }
 			\hline
 			\textbf{Statistic name}&\textbf{Description}\\
 			\hline
@@ -174,12 +191,12 @@ As mentioned before, adjusting the thread pool size based on task statistics may
 The \emph{busy\_time} of a thread strongly depends on the executed tasks and therefore is a metric that gives less information about the thread pool itself. In contrast, the \emph{waiting\_time} is a good indicator to reveal less used threads in the thread pool to determine an optimal amount of threads for the current use case. Furthermore, the \emph{task\_count} of thread compared to the number of tasks processed by the thread pool indicates the degree of usage of the thread. To give further possibilities for optimizing the thread pool, we collect statistics for each thread pool instance.
 
 \subsubsection{Thread Pool Statistics}
-To consider the thread pool instance, an important metric is the average waiting time of tasks. In order to optimize the thread pool size, a balanced relation between the waiting time of tasks and the number of threads must be found. Furthermore, at a specific time, the relation between enqueued and completed tasks can be interesting. In Table \ref{tab4}, we show our statistics collected for each thread pool instance. We will use these statistics to adapt our thread pool implementation to different use cases later on. 
+To consider the thread pool instance, an important metric is the average waiting time of tasks. In order to optimize the thread pool size, a balanced relation between the waiting time of tasks and the number of threads must be found. Furthermore, at a specific time, the relation between enqueued and completed tasks can be interesting. In Table \ref{tab4}, we show our statistics collected for each thread pool instance. We will use these statistics to adapt our thread pool implementation to different use cases later on.
 
 \begin{table}[htbp]
 	\caption{Thread pool statistics with their internal names and descriptions}
 	\begin{center}
-		\begin{tabular}{ c c }
+		\begin{tabular}{ l l }
 			\hline
 			\textbf{Statistic name}&\textbf{Description}\\
 			\hline
@@ -196,27 +213,27 @@ To consider the thread pool instance, an important metric is the average waiting
 \end{table}
 
 \subsection{Testing and Memory Check}
-As last aspect of our implementation, we show how we test the thread pool and how we ensure to avoid memory leaks. Since geckoDB already uses GTest \cite{sen2010quick} for unit testing, we also wrote our test using this framework. GTest provides a simple, powerful library to perform unit tests in C++. We wrote unit tests for the priority queue, the thread pool itself and the performance monitoring. As mentioned before, we use functions from the stdatomic library of c. Using this library in GTest results in compiler errors with GCC, since the c atomic implementation differs from the c++ one of the standard library and the GCC developers will not fix this issue. Consequently, we wrote a workaround not using the c stdatomic library in the GTest compilation unit. 
+As last aspect of our implementation, we show how we test the thread pool and how we ensure to avoid memory leaks. Since geckoDB already uses GTest \cite{sen2010quick} for unit testing, we also wrote our test using this framework. GTest provides a simple, powerful library to perform unit tests in C++. We wrote unit tests for the priority queue, the thread pool itself and the performance monitoring. As mentioned before, we use functions from the stdatomic library of c. Using this library in GTest results in compiler errors with GCC, since the c atomic implementation differs from the c++ one of the standard library and the GCC developers will not fix this issue. Consequently, we wrote a workaround not using the c stdatomic library in the GTest compilation unit.
 
-Since c as low level language does not have an own memory management, memory leaks may occur using heap space allocations. To find and remove all memory leaks in our implementation, we use the tool \emph{valgrind}, which offers different functionalities to find race and jump condition and to count unfreed heap blocks. We found memory leaks in our priority queue tests and also in the deallocation of thread pool instances. In the following sections, we show our experimental setup and the results of our evaluation. 
+Since c as low level language does not have an own memory management, memory leaks may occur using heap space allocations. To find and remove all memory leaks in our implementation, we use the tool \emph{valgrind}, which offers different functionalities to find race and jump condition and to count unfreed heap blocks. We found memory leaks in our priority queue tests and also in the deallocation of thread pool instances. In the following sections, we show our experimental setup and the results of our evaluation.
 
-\section{Experimental Environment}	
+\section{Experimental Environment}
 In this section, we present our experimental environment focusing on the design of our benchmarks and the system configuration we used to evaluate our thread pool implementation.
 
 \subsection{Evaluation Setup}
-In our evaluation setup, we focus primarily on the comparison of using our thread pool against the baseline implementation of creating new threads at runtime of BOLSTER. We simulate calls of BOLSTER primitives with different thread pool and task configurations and compare the results against the baseline. 
+In our evaluation setup, we focus primarily on the comparison of using our thread pool against the baseline implementation of creating new threads at runtime of BOLSTER. We simulate calls of BOLSTER primitives with different thread pool and task configurations and compare the results against the baseline.
 
 Additionally, we evaluate the metrics for threads, tasks and the thread pool mentioned in Section 3.F regarding the thread pool and task configuration used in the BOLSTER primitives. To evaluate optimal configurations for the thread pool, we consider the relation between idle and busy time of the thread pool and the average waiting time of tasks.
 
 Furthermore, we compare the scope and usage of our thread pool against an existing implementation \emph{Threading Building Blocks (Intel TBB)} \cite{kim2011multicore} written in C++. Since Intel TBB uses completely different approaches to parallel the execution of tasks, a direct performance comparison may not lead to reliable results. Therefore, we evaluate the usage and the scope both implementations give.
- 
+
 \subsection{Experimental Configuration}
 %\textbf{TODO: Change!}\\The operating system is Ubuntu 17.04 with linux kernel
 %version 4.13 running in a virtual machine on an Intel Core i7-6700HQ, 4x 2.6 GHz
 %(Skylake) and 8GB DDR3 RAM running on 1600Mhz. We reduce the number of cores of
 %the virtual machine to 4 instead of 8 virtual cores of the CPU. The CPU has
 %256KB L1 cache, 1MB L2 cache, and 6MB L3 cache. All benchmarks have been
-%repeated three times and a median value of all repetitions is being used for evaluation. 	
+%repeated three times and a median value of all repetitions is being used for evaluation.
 
 For testing purposes we used primarly Linux setups, for one Ubuntu 17.04
 (linux 4.13) in an virtual machine environment, second Archlinux (linux
@@ -236,12 +253,12 @@ Implementing multi threading can be realised using different approaches from spa
 
 Schmidt et al. present different implementations of multi threading, including two types of thread pools. They distinguish between the \emph{Worker Thread Pool Architecture} and the \emph{Leader/Follower Thread Pool Architecture} \cite{schmidt1998evaluating}. In the first approach, an IO-thread selects a connection, reads the requests and dispatches the tasks to an array of threads. Drawbacks of this system are excessive context switching effort along with synchronization required to manage the request queue. In the second approach, one thread of the pool becomes the leader and does the reading of the task into an internal buffer. If the request is valid, the thread itself processes the task and a follower thread becomes the new leader. This approach minimizes the context switching effort compared to the first one.
 
-Along with the design of thread pool systems, the performance strongly depends on the number of threads used in a thread pool. Xu et al. present a performance study for a set of performance metrics combined with a heuristic algorithm for dynamic resizing of thread pools \cite{xu2004performance}. They show the correlation between average task idle time and the throughput of thread pools and present the effectiveness of dynamically adjusting the number of threads. 
+Along with the design of thread pool systems, the performance strongly depends on the number of threads used in a thread pool. Xu et al. present a performance study for a set of performance metrics combined with a heuristic algorithm for dynamic resizing of thread pools \cite{xu2004performance}. They show the correlation between average task idle time and the throughput of thread pools and present the effectiveness of dynamically adjusting the number of threads.
 
 Compared to heuristically adjust the number of threads, Ling et al. formalized the problem of finding the optimal number of threads by establishing mathematical relationship among optimal thread pool size, system load and the associated costs \cite{ling2000analysis}. They show the applicability of their model and plan to further examine it based on additional metrics.
 \section{Conclusion and Future Work}
 
 \bibliographystyle{splncs}
-\bibliography{paper_thread_pool} 
+\bibliography{paper_thread_pool}
 
 \end{document}
