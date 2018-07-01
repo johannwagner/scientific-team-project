@@ -33,7 +33,7 @@ typedef struct task_stats {
 // INTERNAL METHODS
 //
 
-static inline double __get_time_diff(struct timespec* begin, struct timespec* end) {
+static inline long long __get_time_diff(struct timespec* begin, struct timespec* end) {
 	
 	return (end->tv_sec - begin->tv_sec) * 1000000000L + (end->tv_nsec - begin->tv_nsec); /// 1000000000.0;
 }

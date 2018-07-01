@@ -1,6 +1,6 @@
-set terminal pngcairo nocrop enhanced size 1500,1000 font ",8"
-set output 'pool_avg.pres.png'
-set title 'Idle and completion time(ns) s' font ",20"
+set terminal pngcairo nocrop enhanced size 700,400 font ",8"
+set output 'pool_baseline.png'
+set title 'Thread pool and baseline execution time (ns)' font ",15"
 set boxwidth 0.8 absolute
 set border 1
 set style fill solid 1.00 border lt -1
@@ -16,7 +16,7 @@ set linetype 1 lc rgb '#FF420E'
 set linetype 2 lc rgb '#3465A4'
 dx = 1/6.0
 
-plot 'pool_avg.csv' using 2:xtic(1),\
+plot 'pool_baseline.csv' using 2:xtic(1),\
          '' u 3,\
          '' u ($0 - dx):2:2 with labels offset -1,1 ,\
          '' u ($0 + dx):3:3 with labels offset 1,1
