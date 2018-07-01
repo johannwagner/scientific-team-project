@@ -12,7 +12,7 @@ static inline void __execute_task();
 //
 
 thread_pool_t* thread_pool_create(size_t num_threads, int enable_monitoring) {
-  thread_pool_t* pool = malloc(sizeof(thread_pool_t));
+    thread_pool_t* pool = malloc(sizeof(thread_pool_t));
  
   pool->name = NULL;
   pool->size = num_threads;

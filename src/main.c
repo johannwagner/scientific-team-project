@@ -77,16 +77,16 @@ void resize_test()
 
 }
 
-void performance_test(int numThreads, int numTasks)
+void performance_test(int numThreads, int numTasks, FILE *pu, FILE *ps)
 {
-	clock_t begin = clock();
-	double exp = 2.7;
-	for(int i = 0; i < 2048; ++i)
-		work_large(&exp);
-	clock_t end = clock();
-	float time = (double)(end - begin) / CLOCKS_PER_SEC;
-	time /= 2048;
-	printf("time for one task: time: %f | %f\n", time, exp);
+//	clock_t begin = clock();
+//	double exp = 2.7;
+//	for(int i = 0; i < 2048; ++i)
+//		work_large(&exp);
+//	clock_t end = clock();
+//	float time = (double)(end - begin) / CLOCKS_PER_SEC;
+//	time /= 2048;
+//	printf("time for one task: time: %f | %f\n", time, exp);
 
 	thread_pool_t* pool = thread_pool_create(numThreads, 1);
 
@@ -104,7 +104,11 @@ void performance_test(int numThreads, int numTasks)
 	sleep(1);
 
 	float a = thread_pool_get_time_working(pool);
-	printf("fraction of time spend working: %f\n",a);
+    thread_pool_stats stats = thread_pool_get_stats(pool);
+//	printf("fraction of time spend working: %f\n",a);
+
+	fprintf(pu, "%i %f\n", numThreads, a);
+    fprintf(ps, "%i %lli %lli\n", numThreads, stats.avg_complete_time, stats.avg_wait_time);
 
 	thread_pool_free(pool);
 }
@@ -131,12 +135,10 @@ float wait_performance_test(int numThreads, int numTasks)
 	float a = thread_pool_get_time_working(pool);
 //	printf("fraction of time spend working: %f\n",a);
     thread_pool_stats stats = thread_pool_get_stats(pool);
-    
 	test_results_pu[numThreads] += a;
 	test_results_ps1[numThreads] += stats.avg_complete_time;
 	test_results_ps2[numThreads] += stats.avg_wait_time;
-	//fprintf(pu, "%i %f \n",numThreads, a);
-    	//fprintf(ps, "%i %lli %lli \n", numThreads, stats.avg_complete_time, stats.avg_wait_time);
+
 	thread_pool_free(pool);
 	return a;
 }
@@ -206,22 +208,36 @@ int main()
 		size_t i = (size_t)priority_queue_pop(&queue);
 		printf("%I64d\n",i);
 	}*/
-	//performance_test(2, 4000);
+
 	//resize_test();
 	FILE *ps;
 	FILE *pu;
+	FILE *puw;
+	FILE *psw;
 	FILE *pb;
 
-	ps = fopen("Statistics/pool_avg.csv","w+");
+    ps = fopen("Statistics/pool_avg.csv","w+");
     fprintf(ps, "Threads BusyTime IdleTime \n");
-    pu = fopen("Statistics/pool_util.csv","w+");
-    fprintf(pu, "Threads Util \n");
 	pb = fopen("Statistics/pool_baseline.csv","w+");
     fprintf(pu, "Thread pool vs Baseline \n");
+
+    psw = fopen("Statistics/pool_avg_wait.csv","w+");
+    fprintf(psw, "Threads BusyTime IdleTime \n");
+    puw = fopen("Statistics/pool_util_wait.csv","w+");
+    fprintf(puw, "Threads Util \n");
+	pu = fopen("Statistics/pool_util.csv","w+");
+	fprintf(pu, "Threads Util \n");
+	
+	//fprintf(puw, "%i %f \n",numThreads, a);
+	//for(int i = 2; i< 33; ++i){
+	//	performance_test(i, 4000,ps, pu);
+//	}
+
 //	float sum = 0.f;
 
 	for(int j = 0; j < MEASURE_COUNT; j++) 
 	{
+
 		for(int i = 2; i < 33; i = i * 2)
 		{
 			wait_performance_test(i, 10000);
@@ -232,8 +248,12 @@ int main()
 	for(int i = 2; i < 33; i = i * 2)
 	{
 		fprintf(pu, "%i %f \n",i, test_results_pu[i] / MEASURE_COUNT);
+		fprintf(puw, "%i %f \n",i, test_results_pu[i] / MEASURE_COUNT);
 		fprintf(pb, "%i %lli %lli \n", i, test_results_baseline[i] / (MEASURE_COUNT), test_results_pool[i] / (MEASURE_COUNT));
 		fprintf(ps, "%i %lli %lli \n", i, test_results_ps1[i] / MEASURE_COUNT, test_results_ps2[i] / MEASURE_COUNT);
+		fprintf(psw, "%i %lli %lli \n", i, test_results_ps1[i] / MEASURE_COUNT, test_results_ps2[i] / MEASURE_COUNT);
+		//wait_performance_test(i, 6000,psw, puw);
+
 	}
 //	sum /= 1000;
 //	printf("average: %f\n", sum);
