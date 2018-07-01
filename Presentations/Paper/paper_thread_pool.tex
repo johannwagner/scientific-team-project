@@ -7,9 +7,40 @@
 \usepackage{algorithmic}
 \usepackage{graphicx}
 \usepackage{textcomp}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{listings}
+
 \def\BibTeX{{\rm B\kern-.05em{\sc i\kern-.025em b}\kern-.08em
     T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
 \begin{document}
+
+
+\definecolor{mGreen}{rgb}{0,0.6,0}
+\definecolor{mGray}{rgb}{0.5,0.5,0.5}
+\definecolor{mPurple}{rgb}{0.58,0,0.82}
+\definecolor{backgroundColour}{rgb}{0.95,0.95,0.92}
+
+\lstdefinestyle{CStyle}{
+	backgroundcolor=\color{backgroundColour},   
+	commentstyle=\color{mGreen},
+	keywordstyle=\color{blue},
+	numberstyle=\tiny\color{mGray},
+	stringstyle=\color{mPurple},
+	basicstyle=\footnotesize,
+	breakatwhitespace=false,         
+	breaklines=true,                 
+	captionpos=b,                    
+	keepspaces=true,                 
+	numbers=left,                    
+	numbersep=5pt,                  
+	showspaces=false,                
+	showstringspaces=false,
+	showtabs=false,                  
+	tabsize=2,
+	language=C,
+	morekeywords={*,thread\_pool\_t, thread\_task\_t}
+}
 
 \title{Thread Pool in GeckoDB/BOLSTER - Implementing a Thread Pool for a high performance Database System \\
 }
@@ -208,7 +239,7 @@ In our evaluation setup, we focus primarily on the comparison of using our threa
 
 Additionally, we evaluate the metrics for threads, tasks and the thread pool mentioned in Section 3.F regarding the thread pool and task configuration used in the BOLSTER primitives. To evaluate optimal configurations for the thread pool, we consider the relation between idle and busy time of the thread pool and the average waiting time of tasks.
 
-Furthermore, we compare the scope and usage of our thread pool against an existing implementation \emph{Threading Building Blocks (Intel TBB)} \cite{kim2011multicore} written in C++. Since Intel TBB uses completely different approaches to parallel the execution of tasks, a direct performance comparison may not lead to reliable results. Therefore, we evaluate the usage and the scope both implementations give.
+%Furthermore, we compare the scope and usage of our thread pool against an existing implementation \emph{Threading Building Blocks (Intel TBB)} \cite{kim2011multicore} written in C++. Since Intel TBB uses completely different approaches to parallel the execution of tasks, a direct performance comparison may not lead to reliable results. Therefore, we evaluate the usage and the scope both implementations give.
  
 \subsection{Experimental Configuration}
 %\textbf{TODO: Change!}\\The operating system is Ubuntu 17.04 with linux kernel
@@ -230,6 +261,90 @@ All benchmarks have been repeated three times and a median value of all
 repetitions is being used for evaluation.
 
 \section{Evaluation}
+In this Section, we present the results of our evaluation according to the evaluation setup we stated in the previous section. We start with an introduction of the benchmark methods to compare our thread pool against the baseline implementation and present the results. Furthermore, we show the relation of waiting time and completing regarding different thread pool configurations.
+
+\subsection{Comparison against Baseline Implementation}
+As most important aspect of our evaluation, we compare our thread pool against an approximated version of the baseline implementation. Since BOLSTER is deeply integrated into geckoDB and the workload and usage of multithreading depends on the graph data in the system, we can not directly use the BOLSTER implementation for our evaluation. Thus, we extracted the respecting code parts into an own implementation and use this for a direct comparison against the thread pool. In Figure \ref{fig4}, we show the approximated version of the BOLSTER multithreading code that we use as baseline implementation. In our benchmark. the method \emph{cmp\_baseline} is called multiple times with a different \emph{numThreads} parameter. Within each call, \emph{numThreads} threads are created and all of these execute the benchmark method v, that calculates a huge amount of exponential values in a loop. After the calling thread takes part in execution, it waits until all created threads are joined. The elapsed processing time is measured from the begin of the method until joining all threads finished.
+
+\begin{figure}
+	\begin{lstlisting}[style=CStyle]
+	void cmp_baseline(int numThreads)
+	{
+	struct timespec begin, end;
+	clock_gettime(CLOCK_MONOTONIC, &begin);
+	
+	double results[numThreads];
+	thread_task_t tasks[numThreads];
+	
+	pthread_t threads[numThreads];
+	for (int tid = 1; tid < numThreads; tid++)
+	{
+	results[tid] = (double)(tid+1);
+	pthread_create(&threads[tid] , NULL, 
+	&work_large, &results[tid]);
+	}
+	
+	// Let the calling thread process one 
+	// task before waiting
+	work_large(&results[0]);
+	
+	for (int tid = 1; tid < numThreads; tid++) {
+	pthread_join(threads[tid], NULL);
+	}
+	
+	clock_gettime(CLOCK_MONOTONIC, &end);
+	test_results_baseline[numThreads] +=
+	__get_time_diff(&begin, &end);
+	}
+	\end{lstlisting}
+	\caption{Baseline multithreading implementation extracted from BOLSTER}
+	\label{fig4}
+\end{figure}
+
+To compare against the presented baseline implementation, we developed a method that does the same amount of calls of \emph{work\_large} as the baseline, but uses a thread pool instance instead of creating new threads. In Figure \ref{fig5}, we show this implementation called \emph{cmp\_pool} that creates and fills tasks and enqueues these into a thread pool instance. Since we assume, that the thread pools are reused for multiple requests, we exclude the thread pool creation and deallocation from the time measure. Consequently, only creating and processing tasks is included in the considered elapsed time. 
+
+\begin{figure}
+	\begin{lstlisting}[style=CStyle]
+	void cmp_pool(int numThreads)
+	{
+	thread_pool_t* pool = 
+	thread_pool_create(numThreads, 1);
+	
+	struct timespec begin, end;
+	clock_gettime(CLOCK_MONOTONIC, &begin);
+	double results[numThreads];
+	thread_task_t tasks[numThreads];
+	
+	for(int i = 0; i < numThreads; ++i)
+	{
+	results[i] = (double)(i+1);
+	tasks[i].args = &results[i];
+	tasks[i].routine = work_large;
+	thread_pool_enqueue_task(&tasks[i], pool, NULL);
+	}
+	
+	thread_pool_wait_for_all(pool);
+	
+	clock_gettime(CLOCK_MONOTONIC, &end);
+	test_results_pool[numThreads] += 
+	__get_time_diff(&begin, &end);
+	
+	thread_pool_free(pool);
+	}
+	\end{lstlisting}
+	\caption{Thread pool benchmark to compare against baseline implementation}
+	\label{fig5}
+\end{figure}
+
+In our performance comparison, both implementations are executed three times with $4, 8, 16, 32$ as \emph{numThreads} parameter and the summed results are divided by three. We consider a number between $4$ and $32$ as a useful amount of threads to reach a sufficient performance increase due to parallelization, but also to have the possibility to debug and profile them. 
+
+In Figure \ref{fig6}, we show the comparison results of both mentioned implementations and the different \emph{numThreads} parameters. 
+
+\begin{figure}
+	\includegraphics[width=0.5\textwidth]{img/pool_baseline.png}
+	\caption{Time measures in nanoseconds of thread pool (blue) and baseline (orange) implementation with different numbers of threads.  }
+	\label{fig6}
+\end{figure}
 
 \section{Related Work}
 Implementing multi threading can be realised using different approaches from spawning new threads to reuse them in thread pools. Pyarali et al. show that a thread pool model can significantly improve system performance and reduce response time \cite{pyarali2001evaluating}. They present different approaches to implement thread pools and show the dependency on use cases of these implementations.
