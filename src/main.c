@@ -13,11 +13,16 @@
 #define MEASURE_COUNT 10 
 
 static double test_results_pu[64];
+static double test_results_puw[64];
 static long long test_results_ps1[64];
 static long long test_results_ps2[64];
+static long long test_results_psw1[64];
+static long long test_results_psw2[64];
+
 
 static long long test_results_baseline[64];
 static long long test_results_pool[64];
+static long long test_results_batch[64];
 
 void work_large(void* args)
 {
@@ -47,7 +52,7 @@ void resize_test()
 {
 	thread_pool_t* pool = thread_pool_create(2, 0);
 	task_handle_t hndl;
-	const int numThreads = 1 << 11;
+	const size_t numThreads = 1 << 11;
 	thread_task_t    tasks[numThreads];
 	int results[numThreads];
 	for(int i = numThreads-1; i >= 0; --i){
@@ -68,32 +73,23 @@ void resize_test()
 
 	// verify results
 	int sum = 0;
-	for(int i = 0; i < numThreads; ++i)
+	for(size_t i = 0; i < numThreads; ++i)
 	{
 		sum += i*i / 8;
-		if(results[i] != sum) printf("error at %d: %d != %d\n", i, sum, results[i]);
+		if(results[i] != sum) printf("error at %lu: %d != %d\n", i, sum, results[i]);
 	}
 	printf("interleaving test completed.\n");
 
 }
 
-void performance_test(int numThreads, int numTasks, FILE *pu, FILE *ps)
+void performance_test(size_t numThreads, size_t numTasks)
 {
-//	clock_t begin = clock();
-//	double exp = 2.7;
-//	for(int i = 0; i < 2048; ++i)
-//		work_large(&exp);
-//	clock_t end = clock();
-//	float time = (double)(end - begin) / CLOCKS_PER_SEC;
-//	time /= 2048;
-//	printf("time for one task: time: %f | %f\n", time, exp);
-
 	thread_pool_t* pool = thread_pool_create(numThreads, 1);
 
 	double results[numTasks];
 	thread_task_t tasks[numTasks];
 
-	for(int i = 0; i < numTasks; ++i)
+	for(size_t i = 0; i < numTasks; ++i)
 	{
 		results[i] = (double)(i+1);
 		tasks[i].args = &results[i];
@@ -102,25 +98,23 @@ void performance_test(int numThreads, int numTasks, FILE *pu, FILE *ps)
 		thread_pool_enqueue_task(&tasks[i], pool, NULL);
 	}
 	sleep(1);
-
-	float a = thread_pool_get_time_working(pool);
     thread_pool_stats stats = thread_pool_get_stats(pool);
-//	printf("fraction of time spend working: %f\n",a);
 
-	fprintf(pu, "%i %f\n", numThreads, a);
-    fprintf(ps, "%i %lli %lli\n", numThreads, stats.avg_complete_time, stats.avg_wait_time);
+    test_results_pu[numThreads] += thread_pool_get_time_working(pool);
+    test_results_ps1[numThreads] += stats.avg_complete_time;
+    test_results_ps2[numThreads] += stats.avg_wait_time;
 
 	thread_pool_free(pool);
 }
 
-float wait_performance_test(int numThreads, int numTasks)
+float wait_performance_test(size_t numThreads, size_t numTasks)
 {
 	thread_pool_t* pool = thread_pool_create(numThreads, 1);
 
 	double results[numTasks];
 	thread_task_t tasks[numTasks];
 
-	for(int i = 0; i < numTasks; ++i)
+	for(size_t i = 0; i < numTasks; ++i)
 	{
 		results[i] = (double)(i+1);
 		tasks[i].args = &results[i];
@@ -133,17 +127,17 @@ float wait_performance_test(int numThreads, int numTasks)
 	thread_pool_wait_for_all(pool);
 
 	float a = thread_pool_get_time_working(pool);
-//	printf("fraction of time spend working: %f\n",a);
-    thread_pool_stats stats = thread_pool_get_stats(pool);
-	test_results_pu[numThreads] += a;
-	test_results_ps1[numThreads] += stats.avg_complete_time;
-	test_results_ps2[numThreads] += stats.avg_wait_time;
+
+	thread_pool_stats stats = thread_pool_get_stats(pool);
+	test_results_puw[numThreads] += a;
+	test_results_psw1[numThreads] += stats.avg_complete_time;
+	test_results_psw2[numThreads] += stats.avg_wait_time;
 
 	thread_pool_free(pool);
 	return a;
 }
 
-void cmp_pool(int numThreads)
+void cmp_pool(size_t numThreads)
 {
 	thread_pool_t* pool = thread_pool_create(numThreads, 1);
 	struct timespec begin, end;
@@ -152,7 +146,7 @@ void cmp_pool(int numThreads)
 	double results[numThreads];
 	thread_task_t tasks[numThreads];
 	
-	for(int i = 0; i < numThreads; ++i)
+	for(size_t i = 0; i < numThreads; ++i)
 	{
 		results[i] = (double)(i+1);
 		tasks[i].args = &results[i];
@@ -168,24 +162,23 @@ void cmp_pool(int numThreads)
 	thread_pool_free(pool);
 }
 
-void cmp_baseline(int numThreads)
+void cmp_baseline(size_t numThreads)
 {
 	struct timespec begin, end;
 	clock_gettime(CLOCK_MONOTONIC, &begin);
 
 	double results[numThreads];
-	thread_task_t tasks[numThreads];
 
 	pthread_t threads[numThreads];
-    for (int tid = 1; tid < numThreads; tid++)
+    for (size_t tid = 1; tid < numThreads; tid++)
     {
 		results[tid] = (double)(tid+1);
-        pthread_create(&threads[tid] , NULL, &work_large, &results[tid]);
+        pthread_create(&threads[tid] , NULL, (void*) &work_large, &results[tid]);
     }
 	// Let the calling thread process one task before waiting
     work_large(&results[0]);
 
-    for (register int tid = 1; tid < numThreads; tid++) {
+    for (register size_t tid = 1; tid < numThreads; tid++) {
         pthread_join(threads[tid], NULL);
     }
 
@@ -193,8 +186,14 @@ void cmp_baseline(int numThreads)
 	test_results_baseline[numThreads] += __get_time_diff(&begin, &end);
 }
 
+void cmp_efficiency(size_t numThreads) {
+    struct timespec begin, end;
+    clock_gettime(CLOCK_MONOTONIC, &begin);
+}
+
 int main()
 {
+    printf("Starting benchmark ... \n");
 /*	priority_queue_t queue;
 	priority_queue_init(&queue);
 
@@ -209,17 +208,18 @@ int main()
 		printf("%I64d\n",i);
 	}*/
 
-	//resize_test();
-	FILE *ps;
-	FILE *pu;
-	FILE *puw;
-	FILE *psw;
-	FILE *pb;
+    //resize_test();
+    FILE *ps;
+    FILE *pu;
+    FILE *puw;
+    FILE *psw;
+    FILE *pb;
+
 
     ps = fopen("Statistics/pool_avg.csv","w+");
     fprintf(ps, "Threads BusyTime IdleTime \n");
 	pb = fopen("Statistics/pool_baseline.csv","w+");
-    fprintf(pu, "Thread pool vs Baseline \n");
+    fprintf(pb, "Thread pool vs Baseline \n");
 
     psw = fopen("Statistics/pool_avg_wait.csv","w+");
     fprintf(psw, "Threads BusyTime IdleTime \n");
@@ -241,6 +241,7 @@ int main()
 		for(int i = 2; i < 33; i = i * 2)
 		{
 			wait_performance_test(i, 10000);
+			performance_test(i, 10000);
 			cmp_baseline(i);
 			cmp_pool(i);
 		}
@@ -248,15 +249,13 @@ int main()
 	for(int i = 2; i < 33; i = i * 2)
 	{
 		fprintf(pu, "%i %f \n",i, test_results_pu[i] / MEASURE_COUNT);
-		fprintf(puw, "%i %f \n",i, test_results_pu[i] / MEASURE_COUNT);
+		fprintf(puw, "%i %f \n",i, test_results_puw[i] / MEASURE_COUNT);
 		fprintf(pb, "%i %lli %lli \n", i, test_results_baseline[i] / (MEASURE_COUNT), test_results_pool[i] / (MEASURE_COUNT));
 		fprintf(ps, "%i %lli %lli \n", i, test_results_ps1[i] / MEASURE_COUNT, test_results_ps2[i] / MEASURE_COUNT);
-		fprintf(psw, "%i %lli %lli \n", i, test_results_ps1[i] / MEASURE_COUNT, test_results_ps2[i] / MEASURE_COUNT);
-		//wait_performance_test(i, 6000,psw, puw);
+		fprintf(psw, "%i %lli %lli \n", i, test_results_psw1[i] / MEASURE_COUNT, test_results_psw2[i] / MEASURE_COUNT);
 
 	}
-//	sum /= 1000;
-//	printf("average: %f\n", sum);
-//	getchar();
+
+    printf("finished.");
 	return 0;
 }
