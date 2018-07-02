@@ -20,11 +20,6 @@ Sen, A.:
 \newblock A quick introduction to the google c++ testing framework.
 \newblock IBM DeveloperWorks (2010)  p. 20
 
-\bibitem{kim2011multicore}
-Kim, W., Voss, M.:
-\newblock Multicore desktop programming with intel threading building blocks.
-\newblock IEEE software \textbf{28}(1) (2011)  pp. 23--31
-
 \bibitem{pyarali2001evaluating}
 Pyarali, I., Spivak, M., Cytron, R., Schmidt, D.C.:
 \newblock Evaluating and optimizing thread pool strategies for real-time corba.
