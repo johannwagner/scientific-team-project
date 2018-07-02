@@ -288,7 +288,7 @@ Thirdly, measuring multi threading performance highly depends on the current wor
 \subsection{Comparison against Baseline Implementation}
 As most important aspect of our evaluation, we compare our thread pool against an approximated version of the baseline implementation. To justify the performance comparison results, we present the different benchmark implementations in detail before we show the evaluation results.
 
-\subsubsection{Benchmark Implementations}
+\subsubsection{Benchmark Implementation}
 Since BOLSTER is deeply integrated into geckoDB and the workload and usage of multithreading depends on the graph data in the system, we can not directly use the BOLSTER implementation for our evaluation. Thus, we extracted the respecting code parts into an own implementation and use this for a direct comparison against the thread pool. 
 
 In Figure \ref{fig4}, we show the approximated version of the BOLSTER multithreading code that we use as baseline implementation. In our benchmark. the method \emph{cmp\_baseline} is called multiple times with a different \emph{numThreads} parameter. Within each call, \emph{numThreads} threads are created and all of these execute the benchmark method v, that calculates a huge amount of exponential values in a loop. After the calling thread takes part in execution, it waits until all created threads are joined. The elapsed processing time is measured from the begin of the method until joining all threads finished.
@@ -363,7 +363,7 @@ To compare against the presented baseline implementation, we developed a method 
 	\label{fig5}
 \end{figure}
 
-\subsubsection{Comparison Results}
+\subsubsection{Evaluation Results}
 In our performance comparison, both implementations are executed three times with $4, 8, 16, 32$ as \emph{numThreads} parameter and the summed results are divided by three. We consider a number between $4$ and $32$ as a useful amount of threads to reach a sufficient performance increase due to parallelization, but also to have the possibility to debug and profile them. 
 
 In Figure \ref{fig6}, we show the comparison results of both mentioned implementations and the different \emph{numThreads} parameters. Our thread pool implementation is faster than the baseline for all \emph{numThreads} parameters. Based on Figure \ref{fig6}, we make the following conclusions. 
@@ -378,15 +378,27 @@ Secondly, the task creation and enqueuing have only slight on the performance, s
 	\label{fig6}
 \end{figure}
 
-\subsubsection{Summary}
-As mentioned before, our implementation reaches better performance than the baseline regarding our specific tests. 
-
 \subsection{Waiting Time Evaluation}
+As mentioned before, instead of implementing explicit scheduling to assign tasks to threads, we use the \emph{first come first serve} approach. Each thread that currently has no task, checks the priority queue to pop a new task in a loop. Since our priority queue manages the memory access from different threads using a mutex thread, the queue is locked while a thread asks for a task. Consequently, in large thread pools, the accessing time of the priority queue may increase along with the waiting time of threads. To examine this behaviour with increasing thread pool size, we measure the average waiting time of thread pools with different sizes.
+
+\subsubsection{Benchmark Implementation}
+To examine the waiting time behaviour of larger thread pools, we use a similar implementation than the \emph{cmp\_pool} method, which creates 10000 tasks at different thread pool sizes. Again, we consider sizes from $4$ to $32$ threads as useful test case and take the average value of three measurements. To measure waiting and completion time, we use the monitoring component of our system and evaluate the thread pool statistics of each instance. 
+
+\subsubsection{Evaluation Results}
+In Figure \ref{fig7}, we show the relation of waiting and completion time of different thread pool sizes. The waiting time is, compared to the completion time, very small and nearly constant for all considered thread pool sizes. From this observation, we draw the following conclusions for our \emph{first come first serve} scheduling approach. Firstly, constant average waiting time indicates only small performance decreases due to priority queue locking. Secondly, even for $32$ threads in one pool instance, the waiting time occupies only a small fraction of the completion time, which indicates good thread usage.  
+
+As mentioned before in this section, the performance results depend on the current workload of the system, as seen by the waiting time shown in Figure \ref{fig7}. Although the priority queue locking by the mutex thread should increase the waiting time slightly with bigger thread pool sizes, the last measuring point is lower than the previous points. 
+
 \begin{figure}
 	\includegraphics[width=0.5\textwidth]{img/pool_avg.png}
-	\caption{Time measures in nanoseconds of thread pool (blue) and baseline (orange) implementation with different numbers of threads.  }
+	\caption{Relation between waiting time (orange) and completion time (blue) of thread pools with different sizes processing 10000 tasks}
 	\label{fig7}
 \end{figure}
+
+\subsection{Summary}
+As last step of the evaluation, we summarize our results and compare them to the requirements of geckoDB. As mentioned before, our implementation reaches better performance than the baseline regarding our specific tests. Consequently, we solved the task for implementing and integrating the thread pool into BOLSTER to reach at least the baseline performance. Additionally, using our thread pool implementation solves the problem, that debugging and profiling with a huge number of threads is not possible. 
+
+Although a small and constant waiting time was not a requirement for integration into geckoDB, we ensure that assigning many tasks work fast for different thread pool sizes. Regarding the performance and also the design requirements of geckoDB and BOLSTER, we fulfil these requirements and successfully implemented and evaluated our thread pool implementation.
 
 \section{Related Work}
 Implementing multi threading can be realised using different approaches from spawning new threads to reuse them in thread pools. Pyarali et al. show that a thread pool model can significantly improve system performance and reduce response time \cite{pyarali2001evaluating}. They present different approaches to implement thread pools and show the dependency on use cases of these implementations.
@@ -396,6 +408,7 @@ Schmidt et al. present different implementations of multi threading, including t
 Along with the design of thread pool systems, the performance strongly depends on the number of threads used in a thread pool. Xu et al. present a performance study for a set of performance metrics combined with a heuristic algorithm for dynamic resizing of thread pools \cite{xu2004performance}. They show the correlation between average task idle time and the throughput of thread pools and present the effectiveness of dynamically adjusting the number of threads.
 
 Compared to heuristically adjust the number of threads, Ling et al. formalized the problem of finding the optimal number of threads by establishing mathematical relationship among optimal thread pool size, system load and the associated costs \cite{ling2000analysis}. They show the applicability of their model and plan to further examine it based on additional metrics.
+
 \section{Conclusion and Future Work}
 
 \bibliographystyle{splncs}
