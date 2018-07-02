@@ -276,9 +276,14 @@ All benchmarks have been repeated three times and a median value of all
 repetitions is being used for evaluation.
 
 \section{Evaluation}
-In this Section, we present the results of our evaluation according to the evaluation setup we stated in the previous section. We start with an introduction of the benchmark methods to compare our thread pool against the baseline implementation and present the results. Furthermore, we show the relation of waiting time and completing regarding different thread pool configurations.
+In this Section, we present the results of our evaluation according to the setup we stated in the previous section. We start with an introduction of the benchmark methods to compare our thread pool against the baseline implementation and present the results. Furthermore, we show the relation of waiting time and completing regarding different thread pool configurations.
 
-\subsection{TODO: Validity of Results}
+\subsection{Validity of Results}
+Before presenting our evaluation results, we give some preliminaries about the validity of our results. At first, all measurements are executed on all machines we listed in our experimental configuration, but in this work we present only the results measured on Archlinux with kernel 4.17.2-1 and 24 GB DDR4-SODIMM. We decided to use this system, since it is running on a high kernel version and not in a virtual environment. Additionally, we use gnuplot to generate diagrams from our results, consequently using a windows machine is not optimal.
+
+Secondly, the measured results represent the usage of our thread pool implementation, but may differ strongly in other applications. Depending on the number of threads used outside the thread pools and the ability to parallelize work, the performance may increase less than shown in our tests.
+
+Thirdly, measuring multi threading performance highly depends on the current workload of the system and the scheduler. We determine this in our evaluation since tests differ strongly in their results. Although we make average measurements for each benchmark, these represent the performance increase at the current system workload.
 
 \subsection{Comparison against Baseline Implementation}
 As most important aspect of our evaluation, we compare our thread pool against an approximated version of the baseline implementation. To justify the performance comparison results, we present the different benchmark implementations in detail before we show the evaluation results.
@@ -290,34 +295,34 @@ In Figure \ref{fig4}, we show the approximated version of the BOLSTER multithrea
 
 \begin{figure}
 	\begin{lstlisting}[style=CStyle]
-	void cmp_baseline(int numThreads)
-	{
-	struct timespec begin, end;
-	clock_gettime(CLOCK_MONOTONIC, &begin);
-	
-	double results[numThreads];
-	thread_task_t tasks[numThreads];
-	
-	pthread_t threads[numThreads];
-	for (int tid = 1; tid < numThreads; tid++)
-	{
-	results[tid] = (double)(tid+1);
-	pthread_create(&threads[tid] , NULL, 
-	&work_large, &results[tid]);
-	}
-	
-	// Let the calling thread process one 
-	// task before waiting
-	work_large(&results[0]);
-	
-	for (int tid = 1; tid < numThreads; tid++) {
-	pthread_join(threads[tid], NULL);
-	}
-	
-	clock_gettime(CLOCK_MONOTONIC, &end);
-	test_results_baseline[numThreads] +=
-	__get_time_diff(&begin, &end);
-	}
+		void cmp_baseline(int numThreads)
+		{
+			struct timespec begin, end;
+			clock_gettime(CLOCK_MONOTONIC, &begin);
+			
+			double results[numThreads];
+			thread_task_t tasks[numThreads];
+			
+			pthread_t threads[numThreads];
+			for (int tid = 1; tid < numThreads; tid++)
+			{
+				results[tid] = (double)(tid+1);
+				pthread_create(&threads[tid] , NULL, 
+					&work_large, &results[tid]);
+			}
+			
+			// Let the calling thread process one 
+			// task before waiting
+			work_large(&results[0]);
+			
+			for (int tid = 1; tid < numThreads; tid++) {
+				pthread_join(threads[tid], NULL);
+			}
+			
+			clock_gettime(CLOCK_MONOTONIC, &end);
+			test_results_baseline[numThreads] +=
+				__get_time_diff(&begin, &end);
+		}
 	\end{lstlisting}
 	\caption{Baseline multithreading implementation extracted from BOLSTER}
 	\label{fig4}
@@ -327,32 +332,33 @@ To compare against the presented baseline implementation, we developed a method 
 
 \begin{figure}
 	\begin{lstlisting}[style=CStyle]
-	void cmp_pool(int numThreads)
-	{
-	thread_pool_t* pool = 
-	thread_pool_create(numThreads, 1);
-	
-	struct timespec begin, end;
-	clock_gettime(CLOCK_MONOTONIC, &begin);
-	double results[numThreads];
-	thread_task_t tasks[numThreads];
-	
-	for(int i = 0; i < numThreads; ++i)
-	{
-	results[i] = (double)(i+1);
-	tasks[i].args = &results[i];
-	tasks[i].routine = work_large;
-	thread_pool_enqueue_task(&tasks[i], pool, NULL);
-	}
-	
-	thread_pool_wait_for_all(pool);
-	
-	clock_gettime(CLOCK_MONOTONIC, &end);
-	test_results_pool[numThreads] += 
-	__get_time_diff(&begin, &end);
-	
-	thread_pool_free(pool);
-	}
+		void cmp_pool(int numThreads)
+		{
+			thread_pool_t* pool = 
+			thread_pool_create(numThreads, 1);
+			
+			struct timespec begin, end;
+			clock_gettime(CLOCK_MONOTONIC, &begin);
+			double results[numThreads];
+			thread_task_t tasks[numThreads];
+			
+			for(int i = 0; i < numThreads; ++i)
+			{
+				results[i] = (double)(i+1);
+				tasks[i].args = &results[i];
+				tasks[i].routine = work_large;
+				thread_pool_enqueue_task(&tasks[i], pool, 
+					NULL);
+			}
+			
+			thread_pool_wait_for_all(pool);
+			
+			clock_gettime(CLOCK_MONOTONIC, &end);
+			test_results_pool[numThreads] += 
+				__get_time_diff(&begin, &end);
+			
+			thread_pool_free(pool);
+		}
 	\end{lstlisting}
 	\caption{Thread pool benchmark to compare against baseline implementation}
 	\label{fig5}
