@@ -301,7 +301,6 @@ In Figure \ref{fig4}, we show the approximated version of the BOLSTER multithrea
 			clock_gettime(CLOCK_MONOTONIC, &begin);
 			
 			double results[numThreads];
-			thread_task_t tasks[numThreads];
 			
 			pthread_t threads[numThreads];
 			for (int tid = 1; tid < numThreads; tid++)
@@ -371,7 +370,7 @@ In Figure \ref{fig6}, we show the comparison results of both mentioned implement
 
 Firstly, compared to strict processing workload, create, and later on join threads, consumes much time. Our thread pool implementation reaches up to a multiple of performance increase compared to the baseline. Since the creation and join of threads is the main difference between both tests, reusing threads will lead to this noticeable performance increase. 
 
-Secondly, the task creation and enqueuing does not have heavy impact on the performance, since the difference in execution time \textbf{TODO: Complete!}
+Secondly, the task creation and enqueuing have only slight on the performance, since the baseline does not include these operations, but is still clearly faster than the thread pool implementation. 
 
 \begin{figure}
 	\includegraphics[width=0.5\textwidth]{img/pool_baseline.png}
