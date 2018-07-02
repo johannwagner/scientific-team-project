@@ -63,13 +63,10 @@
         to create and close thousands of threads. In this paper, we show our
         implementation of a thread pool to process independent tasks in parallel
         including the waiting for a set of processed tasks. We also compare the
-        thread pool implementation against the current one. The evaluation of
-        the thread pool shows, that designing and implementing a thread pool is
-        a balancing act between generalization of tasks and the processing
-        performance. Additionally, we show that the task and thread pool configuration
+        thread pool implementation against the current one. Additionally, we show that the task and thread pool configuration
         depending on the use case has a high impact on the thread
-        pool performance. At the end of our evalutation we rate the implementation a
-        success because we fulfilled all given constraints and generally reduce
+        pool performance. At the end of our evaluation, we show that the implementation 
+        fulfils all given constraints and generally reduce
         overhead compared to creating and spawning threads individually.
 \end{abstract}
 
@@ -88,7 +85,7 @@ To overcome these drawbacks, we integrate an optimised thread pool in BOLSTER. A
 	\item We describe our design and implementation of the thread pool
 	\item We evaluate the possibility to wait for a group of task in the calling thread
 	\item We compare our thread pool against the existing implementation in BOLSTER
-	\item We measure and evaluate statistics for threads, tasks and the thread pool
+	\item We measure and evaluate additional statistics for different thread pool configurations
 \end{itemize}
 We organized the rest of the paper as follows. In Section 2, we give preliminaries about the considered task configuration and about thread safe access of memory. In Section 3, we show our design and implementation of the thread pool and examine our experimental environment in Section 4. In Section 5, we describe the results of our performance evaluation. In Section 6, we name related work and state our conclusion and future work in Section 7.
 
@@ -144,7 +141,7 @@ Threads and tasks are two major entities in the thread pool system. As we can ob
 Each assigned task contains a function pointer to a routine and a pointer to data. We implemented the task queue as a generic priority queue that uses a mutex thread to enqueue tasks threadsafe. Every time a new task is enqueued to the task queue, two scenarios can occur. If the new task has a priority, it is placed in the right slot of the task queue regarding its priority and the subsequent tasks are relocated. If the  new task has no priority, it is appended to the end of the queue. Furthermore, tasks can refer to a handle, which is used by the thread pool to wait for a specific amount of tasks.
 
 \subsection{Processing Tasks}
-Processing tasks in a thread pool is a balancing act between generalization the of tasks and the performance of their execution. Therefore, we provide a set of functions to process task in the thread pool to match different requirements of BOLSTER. In Table 1, we show the functions provided by our thread pool to process tasks. One of the requirements of BOLSTER is waiting until a set of tasks is finished. To achieve the same performance as the baseline implementation reaches, we let the main thread first participate in the execution of the tasks and then wait until all tasks with the same handle are finished.
+Processing tasks in a thread pool is a balancing act between generalization the of tasks and the performance of their execution. With higher generalization, the implementation can be used for more use cases, but the execution performance may decrease. Therefore, we provide a set of functions to process task in the thread pool to match different requirements of BOLSTER. In Table 1, we show the functions provided by our thread pool to process tasks. One of the requirements of BOLSTER is waiting until a set of tasks is finished. To achieve the same performance as the baseline implementation reaches, we let the main thread first participate in the execution of the tasks and then wait until all tasks with the same handle are finished.
 
 To show the processing of tasks, we consider the function \emph{thread\_pool\_enqueue\_tasks\_wait}. In Figure 2, we show the flow of task enqueueing and execution in the thread pool system using this function. In the first step, tasks are passed as a parameter to the enqueue function provided by the thread pool. The tasks have to be created before passing and later on freed after processing by the calling function.  We provide different functions to enqueue a single task or an array of tasks.
 
@@ -385,7 +382,7 @@ As mentioned before, instead of implementing explicit scheduling to assign tasks
 To examine the waiting time behaviour of larger thread pools, we use a similar implementation than the \emph{cmp\_pool} method, which creates 10000 tasks at different thread pool sizes. Again, we consider sizes from $4$ to $32$ threads as useful test case and take the average value of three measurements. To measure waiting and completion time, we use the monitoring component of our system and evaluate the thread pool statistics of each instance. 
 
 \subsubsection{Evaluation Results}
-In Figure \ref{fig7}, we show the relation of waiting and completion time of different thread pool sizes. The waiting time is, compared to the completion time, very small and nearly constant for all considered thread pool sizes. From this observation, we draw the following conclusions for our \emph{first come first serve} scheduling approach. Firstly, constant average waiting time indicates only small performance decreases due to priority queue locking. Secondly, even for $32$ threads in one pool instance, the waiting time occupies only a small fraction of the completion time, which indicates good thread usage.  
+In Figure \ref{fig7}, we show the relation of waiting and completion time of different thread pool sizes. The waiting time is, compared to the completion time, very small and nearly constant for all considered thread pool sizes. From this observation, we draw the following conclusions for our \emph{first come first serve} scheduling approach. Firstly, constant average waiting time indicates only small performance decreases due to priority queue locking. Secondly, even for $32$ threads in one pool instance, the waiting time occupies only a small fraction of the completion time, which indicates good thread usage.  Thirdly, the execution performance increases along with the thread pool size, which shows that even for $32$ threads, parallelization leads to faster task execution. 
 
 As mentioned before in this section, the performance results depend on the current workload of the system, as seen by the waiting time shown in Figure \ref{fig7}. Although the priority queue locking by the mutex thread should increase the waiting time slightly with bigger thread pool sizes, the last measuring point is lower than the previous points. 
 
@@ -410,6 +407,11 @@ Along with the design of thread pool systems, the performance strongly depends o
 Compared to heuristically adjust the number of threads, Ling et al. formalized the problem of finding the optimal number of threads by establishing mathematical relationship among optimal thread pool size, system load and the associated costs \cite{ling2000analysis}. They show the applicability of their model and plan to further examine it based on additional metrics.
 
 \section{Conclusion and Future Work}
+In this work, we describe our implementation of a thread pool system, present in detail the implementation and show our evaluation results containing a comparison against the baseline implementation and the waiting time behaviour over different thread pool sizes. Within our implementation, we state the differences of parallel memory access as well as the problem of implementing synchronous waiting for a set of tasks.
+
+As presented in the evaluation, our thread pool implementation reaches better execution performance than the baseline because of avoiding the creation of short living threads for each request. We measured the average time threads spent waiting in different thread pool sizes and present, that even for a size of $32$ threads, the waiting time stays constantly small. Consequently, we conclude that using \emph{first come first serve} as scheduling approach leads to small waiting times and high execution performance. 
+
+To sum up, our thread pool implementation fulfils all performance and design requirements of geckoDB and BOLSTER and reaches even faster execution time than the existing implementation. In the future, we plan to make the following adaptations to our thread pool system. Firstly, we want to reduce the number of dynamic allocation, since heap allocations mostly are slower than stack allocations. Secondly, we want to examine the usage of existing priority queue implementations for our thread pool system. Thirdly, we plan to integrate a dynamic resizing function based on the collected statistics of the performance monitoring component. 
 
 \bibliographystyle{splncs}
 \bibliography{paper_thread_pool}
