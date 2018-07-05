@@ -17,7 +17,8 @@ thread_pool_t* thread_pool_create(size_t num_threads, int enable_monitoring) {
   pool->name = NULL;
   pool->size = num_threads;
   pool->capacity = num_threads * 2;
-  pool->waiting_tasks = calloc(1, sizeof(priority_queue_t));
+  priority_queue_init(&pool->waiting_tasks);
+
 
   pool->thread_tasks = calloc(num_threads, sizeof(thread_task_t*));
   pool->thread_infos = calloc(sizeof(__thread_information_t*) * pool->capacity, 1);
@@ -84,9 +85,8 @@ void thread_pool_free(thread_pool_t* pool) {
     }
       
 
-    priority_queue_free(pool->waiting_tasks);
+    priority_queue_free(&pool->waiting_tasks);
     free(pool->pool);
-    free(pool->waiting_tasks);
     free(pool->thread_tasks);
     free(pool->thread_infos);
     free(pool->task_group_states);
@@ -159,7 +159,7 @@ status_e thread_pool_enqueue_tasks(thread_task_t* tasks, thread_pool_t* pool, si
     }
     
     tasks[i].group_id = ind;
-    priority_queue_push(pool->waiting_tasks, &tasks[i], tasks[i].priority); 
+    priority_queue_push(&pool->waiting_tasks, &tasks[i], tasks[i].priority); 
   }
 
   if(hndl){
@@ -299,7 +299,7 @@ void *__thread_main(void* args) {
 }
 
 thread_task_t* __get_next_task(thread_pool_t *pool) {
-  thread_task_t* next_task = priority_queue_pop(pool->waiting_tasks);
+  thread_task_t* next_task = priority_queue_pop(&pool->waiting_tasks);
   return next_task;
 }
 

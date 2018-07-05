@@ -56,7 +56,7 @@ typedef struct task_handle_t{
 typedef struct thread_pool_t {
 	char* name;
 	pthread_t* pool;
-	priority_queue_t* waiting_tasks;
+	priority_queue_t waiting_tasks;
 	__task_state_t* task_group_states;
 	size_t task_state_capacity; // number of tasks that can be tracked
 	size_t size;
