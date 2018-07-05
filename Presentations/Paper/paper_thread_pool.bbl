@@ -11,6 +11,14 @@ Ling, Y., Mullen, T., Lin, X.:
 \newblock Analysis of optimal thread pool size.
 \newblock ACM SIGOPS Operating Systems Review \textbf{34}(2) (2000)  pp. 42--55
 
+\bibitem{it:2018-003}
+Lind{\'e}n, J., Jonsson, B.:
+\newblock A skiplist-based concurrent priority queue with minimal memory
+  contention.
+\newblock Technical Report 2018-003, Department of Information Technology,
+  Uppsala University (February 2018) Revised and corrected version of Technical
+  Report 2013-025.
+
 \bibitem{atomicstrong}
 cppreference.com:
 \newblock atomic\_compare\_exchange\_strong - cppreference.com (2016)
