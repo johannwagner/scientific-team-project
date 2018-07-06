@@ -279,7 +279,7 @@ Additionally, we evaluate the metrics for threads, tasks and the thread pool men
 
 For testing purposes we used primarly Linux setups, for one Ubuntu 17.04
 (linux 4.13) in an virtual machine environment, second Archlinux (linux
-4.17.2-1) running native, both updated on stable branch. Tests have also been
+4.17.3-1) running native, both updated on stable branch. Tests have also been
 conducted on Windows 10 and macOs HighSierra machines.
 
 In our setups Sky- and Kabylake aswell as Ryzen processors have been used with memory
@@ -290,8 +290,15 @@ repetitions is being used for evaluation.
 \section{Evaluation}
 In this Section, we present the results of our evaluation according to the setup we stated in the previous section. We start with an introduction of the benchmark methods to compare our thread pool against the baseline implementation and present the results. Furthermore, we show the relation of waiting time and completing regarding different thread pool configurations.
 
-\subsection{Validity of Results}
-Before presenting our evaluation results, we give some preliminaries about the validity of our results. At first, all measurements are executed on all machines we listed in our experimental configuration, but in this work we present only the results measured on Archlinux with kernel 4.17.2-1 and 24 GB DDR4-SODIMM. We decided to use this system, since it is running on a high kernel version and not in a virtual environment. Additionally, we use gnuplot to generate diagrams from our results, consequently using a windows machine is not optimal.
+\subsection{Validity of Results} 
+Before presenting our evaluation results, we
+give some preliminaries about the validity of our results. At first, all
+measurements are executed on all machines we listed in our experimental
+configuration, but in this work we present only the results measured on
+Archlinux with kernel 4.17.3-1 and 24 GB DDR4-SODIMM. We decided to use this
+system, since it is running a current kernel version and not in a virtual
+environment. Additionally, we use gnuplot to generate diagrams from our results,
+consequently using a windows machine is not optimal.
 
 Secondly, the measured results represent the usage of our thread pool implementation, but may differ strongly in other applications. Depending on the number of threads used outside the thread pools and the ability to parallelize work, the performance may increase less than shown in our tests.
 

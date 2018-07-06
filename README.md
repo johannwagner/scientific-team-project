@@ -1,6 +1,6 @@
 # gecko_pool
 gecko_pool is a thread pool designed to be easy to use while still remaining
-more efficient then creating new threads for new problems.
+more efficient than creating new threads for new problems.
 
 ## TODOs:
 - Per-Pool Priority for threads

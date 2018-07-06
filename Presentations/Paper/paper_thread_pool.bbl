@@ -11,14 +11,6 @@ Ling, Y., Mullen, T., Lin, X.:
 \newblock Analysis of optimal thread pool size.
 \newblock ACM SIGOPS Operating Systems Review \textbf{34}(2) (2000)  pp. 42--55
 
-\bibitem{it:2018-003}
-Lind{\'e}n, J., Jonsson, B.:
-\newblock A skiplist-based concurrent priority queue with minimal memory
-  contention.
-\newblock Technical Report 2018-003, Department of Information Technology,
-  Uppsala University (February 2018) Revised and corrected version of Technical
-  Report 2013-025.
-
 \bibitem{atomicstrong}
 cppreference.com:
 \newblock atomic\_compare\_exchange\_strong - cppreference.com (2016)
@@ -27,6 +19,11 @@ cppreference.com:
 Sen, A.:
 \newblock A quick introduction to the google c++ testing framework.
 \newblock IBM DeveloperWorks (2010)  p. 20
+
+\bibitem{kim2011multicore}
+Kim, W., Voss, M.:
+\newblock Multicore desktop programming with intel threading building blocks.
+\newblock IEEE software \textbf{28}(1) (2011)  pp. 23--31
 
 \bibitem{pyarali2001evaluating}
 Pyarali, I., Spivak, M., Cytron, R., Schmidt, D.C.:
