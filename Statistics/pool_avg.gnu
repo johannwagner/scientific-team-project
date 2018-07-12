@@ -8,7 +8,7 @@ set style histogram clustered gap 1 title textcolor lt -1
 set style data histograms
 set xtics border scale 1,0 nomirror autojustify norangelimit
 
-set key off auto columnheader
+set key on auto columnheader
 set yrange [0:*]
 set offset 0,0,graph 0.05,0
 
