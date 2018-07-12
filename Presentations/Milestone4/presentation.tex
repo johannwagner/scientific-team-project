@@ -106,15 +106,24 @@
 	\begin{center}
 		\includegraphics[width=0.8\textwidth]{img/slot_distr.png}
 	\end{center}
-
+	\begin{tabular}{c|c|c}
+		\#Threads & distributed & compact \\
+		1 & 0.998724 & 0.998787 \\
+		2 & 0.935569 & 0.935331 \\
+		3 & 0.917452 & 0.917384 \\
+		4 & 0.918376 & 0.915736 \\
+		5 & 0.795493 & 0.792239 \\
+		6 & 0.906671 & 0.905388 \\
+		7 & 0.818336 & 0.817147 \\
+		8 & 0.774444 & 0.77419		
+	\end{tabular}
 \end{frame}
 
 \begin{frame}
-	\frametitle{Utilization of lock-free vs mutex based heap}
+	\frametitle{Utilization of lock-free vs mutex based priority queue}
 	\begin{center}
 		\includegraphics[width=0.8\textwidth]{img/lock_free.png}
 	\end{center}
-
 \end{frame}
 
 
