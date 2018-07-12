@@ -25,14 +25,13 @@
   pages={pp. 42--55},
   year={2000},
   publisher={ACM}
-}
+}WW
 
-@online{atomicstrong,
+@misc{atomicstrong,
+  title={atomic\_compare\_exchange\_strong - cppreference.com},
   author = {cppreference.com},
-  title = {atomic\_compare\_exchange\_strong - cppreference.com},
-  year = 2016,
-  url = {http://en.cppreference.com/w/c/atomic/atomic_compare_exchange},
-  urldate = {2018-06-19}
+  howpublished="\url{https://en.cppreference.com/w/c/atomic/atomic_compare_exchange}",
+  note = "[Online; accessed 6-July-2018]"
 }
 
 @article{sen2010quick,
@@ -63,4 +62,32 @@
   pages={pp. 54--60},
   year={1998},
   publisher={ACM}
+}
+
+@TechReport{it:2018-003,
+	author	= {Jonatan Lind{\'e}n and Bengt Jonsson},
+	title		= {A Skiplist-Based Concurrent Priority Queue with Minimal
+	Memory Contention},
+	institution	= {Department of Information Technology, Uppsala University},
+	department	= {Division of Computer Systems},
+	year		= {2018},
+	number	= {2018-003},
+	month		= feb,
+	note		= {Revised and corrected version of Technical Report
+	2013-025.},
+	abstract	= {Priority queues are fundamental to many multiprocessor
+	applications. Several priority queue algorithms based on
+	skiplists have been proposed, as skiplists allow concurrent
+	accesses to different parts of the data structure in a
+	simple way. However, for priority queues on
+	multiprocessors, an inherent bottleneck is the operation
+	that deletes the minimal element. We present a
+	linearizable, lock-free, concurrent priority queue
+	algorithm, based on skiplists, which minimizes the
+	contention for shared memory that is caused by the
+	\textsc{DeleteMin} operation. The main idea is to minimize
+	the number of global updates to shared memory that are
+	performed in one \textsc{DeleteMin}. In comparison with
+	other skiplist-based priority queue algorithms, our
+	algorithm achieves a 30 - 80\% improvement.}
 }
