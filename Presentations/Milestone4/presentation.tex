@@ -66,6 +66,49 @@
 	\end{center}
 \end{frame}
 
+\section{Optimizations}
+\begin{frame}
+\begin{center}
+	\huge Optimizations
+\end{center}
+\end{frame}
+
+\begin{frame}
+	\frametitle{wait slot distribution}
+	\begin{center}
+	
+	\begin{columns}
+		\begin{column}{0.28\textwidth}
+			linear search from the beginning:	
+		\end{column}
+		\begin{column}{0.7\textwidth}
+			\includegraphics[width=1.0\textwidth]{img/slot_compact.png}
+		\end{column}
+	\end{columns}
+	\begin{columns}
+		\begin{column}{0.28\textwidth}
+			distribute over cache lines:
+		\end{column}
+		\begin{column}{0.7\textwidth}
+			\includegraphics[width=1.0\textwidth]{img/slot_distributed.png}
+		\end{column}
+	\end{columns}
+	\end{center}
+\end{frame}
+
+\begin{frame}
+	\frametitle{priority queue}
+	\begin{itemize}
+		\item binary heap with a single array
+		\item fast insertion, extraction of the smallest element
+		\item all operations require full access to the array: poor concurrency
+		\item state of the art: skip list with logical operations and delayed deletes
+	\end{itemize}
+	\begin{center}
+		\includegraphics[width=0.7\textwidth]{img/skip_list.png}
+	\end{center}
+\end{frame}
+
 \section{Evaluation}
 \begin{frame}
 	\begin{center}
@@ -113,17 +156,6 @@
 	\begin{center}
 		\includegraphics[width=0.8\textwidth]{img/slot_distr.png}
 	\end{center}
-	\begin{tabular}{c|c|c}
-		\#Threads & distributed & compact \\
-		1 & 0.998724 & 0.998787 \\
-		2 & 0.935569 & 0.935331 \\
-		3 & 0.917452 & 0.917384 \\
-		4 & 0.918376 & 0.915736 \\
-		5 & 0.795493 & 0.792239 \\
-		6 & 0.906671 & 0.905388 \\
-		7 & 0.818336 & 0.817147 \\
-		8 & 0.774444 & 0.77419		
-	\end{tabular}
 \end{frame}
 
 \begin{frame}
