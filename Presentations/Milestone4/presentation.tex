@@ -153,16 +153,32 @@
 
 \begin{frame}
 	\frametitle{Utilization of different slot distribution strategies}
-	\begin{center}
-		\includegraphics[width=0.8\textwidth]{img/slot_distr.png}
-	\end{center}
+	\begin{columns}
+		\begin{column}{0.74\textwidth}
+			\includegraphics[width=1.0\textwidth]{img/slot_distr.png}
+		\end{column}
+		\begin{column}{0.26\textwidth}
+			\begin{itemize}
+				\item[$\Rightarrow$] small impact on performance
+				\item[$\Rightarrow$] no visible scaling with \#threads
+			\end{itemize}
+		\end{column}
+	\end{columns}
 \end{frame}
 
 \begin{frame}
 	\frametitle{Utilization of lock-free vs mutex based priority queue}
-	\begin{center}
-		\includegraphics[width=0.8\textwidth]{img/lock_free.png}
-	\end{center}
+	\begin{columns}
+		\begin{column}{0.76\textwidth}
+			\includegraphics[width=1.0\textwidth]{img/lock_free.png}
+		\end{column}
+		\begin{column}{0.24\textwidth}
+			\begin{itemize}
+				\item[$\Rightarrow$] reduced constant overhead
+				\item[$\Rightarrow$] better asymptotic behaviour
+			\end{itemize}
+		\end{column}
+	\end{columns}
 \end{frame}
 
 \section{Summary}
