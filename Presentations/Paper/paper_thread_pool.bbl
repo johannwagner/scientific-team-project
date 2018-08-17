@@ -24,8 +24,7 @@ Sridhar, K.T.:
 Hamdi, M., Xiong, W., Yu, F., Alswedani, S., Hou, W.C.:
 \newblock {An Aggressive Concurrency Control Protocol for Main Memory
   Databases}.
-\newblock International Journal of Computer Applications \textbf{155}(2) (Dec
-  2016)  7--13
+\newblock International Journal of Computer Applications  7--13
 
 \bibitem{agrawal2017many}
 Agrawal, S.R., Idicula, S., Raghavan, A., Vlachos, E., Govindaraju, V.,
@@ -51,7 +50,7 @@ Schuh, S., Chen, X., Dittrich, J.:
 Psaroudakis, I., Scheuer, T., May, N., Sellami, A., Ailamaki, A.:
 \newblock {Adaptive NUMA-aware Data Placement and Task Scheduling for
   Analytical Workloads in Main-Memory Column-Stores}.
-\newblock Proceedings of the VLDB Endowment \textbf{10}(2) (2016)  37--48
+\newblock Proceedings of the VLDB Endowment (2016)  37--48
 
 \bibitem{psaroudakis2013task}
 Psaroudakis, I., Scheuer, T., May, N., Ailamaki, A.:
@@ -65,7 +64,7 @@ Psaroudakis, I., Scheuer, T., May, N., Ailamaki, A.:
 Wu, Y., Arulraj, J., Lin, J., Xian, R., Pavlo, A.:
 \newblock {An Empirical Evaluation of In-Memory Multi-Version Concurrency
   Control}.
-\newblock Proceedings of the VLDB Endowment \textbf{10}(7) (2017)  781--792
+\newblock Proceedings of the VLDB Endowment (2017)  781--792
 
 \bibitem{books/daglib/0018624}
 Reinders, J.:
@@ -89,7 +88,7 @@ Xu, D., Bode, B.:
 \bibitem{ling2000analysis}
 Ling, Y., Mullen, T., Lin, X.:
 \newblock {Analysis of optimal thread pool size}.
-\newblock ACM SIGOPS Operating Systems Review \textbf{34}(2) (2000)  pp. 42--55
+\newblock ACM SIGOPS Operating Systems Review (2000)  pp. 42--55
 
 \bibitem{it:2018-003}
 Lind{\'e}n, J., Jonsson, B.:
@@ -114,11 +113,11 @@ Sen, A.:
 Pyarali, I., Spivak, M., Cytron, R., Schmidt, D.C.:
 \newblock {Evaluating and Optimizing Thread Pool Strategies for Real-Time
   CORBA}.
-\newblock ACM SIGPLAN Notices \textbf{36}(8) (2001)  pp. 214--222
+\newblock ACM SIGPLAN Notices (2001)  pp. 214--222
 
 \bibitem{schmidt1998evaluating}
 Schmidt, D.C.:
 \newblock {Evaluating architectures for multithreaded object request brokers}.
-\newblock Communications of the ACM \textbf{41}(10) (1998)  pp. 54--60
+\newblock Communications of the ACM (1998)  pp. 54--60
 
 \end{thebibliography}

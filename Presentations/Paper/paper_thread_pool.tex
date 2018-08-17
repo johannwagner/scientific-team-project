@@ -56,14 +56,15 @@
 
 \maketitle
 
+
 \begin{abstract}
         Processing tasks in parallel is used in nearly all applications to keep
         up with the requirements of modern software systems. However, the
-        current implementation of parallel processing in GeckoDB, a graph database system developed in our group, requires
+        current implementation of parallel processing in \textsc{GeckoDB}, a graph database system developed in our group, requires
         to spawn many short-lived threads that execute a single task and then
         terminate. This creates a lot of overhead since the threads are not
         being reused. To counter this effect, we implemented a thread pool to be
-        used in GeckoDB to reduce the additional time required
+        used in \textsc{GeckoDB} to reduce the additional time required
         to create and close thousands of threads. In this paper, we show our
         implementation of a thread pool to process independent tasks in parallel,
         including the waiting for a set of processed tasks. We also compare the
@@ -81,22 +82,22 @@ Database Management System, Architecture of Parallel Processing Systems, Thread 
 \section{Introduction}
 Since the amount of data that is stored and processed by modern database systems is growing fast, sequential data processing as only possibility is inconceivable~\cite{Alonso:2013:HKS:2510649.2511162}. Hence, applications and systems have to process data in parallel to reach sufficient throughput to fulfil appropriate requirements~\cite{DBLP:series/synthesis/2017Ailamaki, 10.1007/978-3-319-72413-3_8, 10.5120/ijca2016912260} which in turn affects the architectural design and query processing of modern database systems~\cite{agrawal2017many, Makreshanski2017, schuh2016experimental, psaroudakis2016adaptive, psaroudakis2013task}. 
 
-The growing number of cores for both traditional CPUs as well as trending co-processors like GPUs require to re-evaluate core design decision in data-intense systems. For instance, Wu et al. examined the scalability of multi-version concurrency control (MVCC) for a growing number of threads in  2017\cite{wu2017empirical}. They concluded that multi-threading in particular and modern hardware in general both promise notable performance gains for high-performance database systems using MVCC. However, they also observed that there is no clear winner combination for several concurrency control protocol, version storage, and garbage collection as well as the index management strategies in MVCC. 
+The growing number of cores for both traditional CPUs as well as trending co-processors like GPUs require to re-evaluate core design decision in data-intense systems. For instance, Wu et al. examined the scalability of multi-version concurrency control (MVCC) for a growing number of threads in 2017\cite{wu2017empirical}. They concluded that multi-threading in particular and modern hardware in general both promise notable performance gains for high-performance database systems using MVCC. However, they also observed that there is no clear winner combination for several concurrency control protocol, version storage, and garbage collection as well as the index management strategies in MVCC. 
 
-For this paper, we focus on managing a far lower level: general parallel data processing. In particular, with this paper we provide insights into our thread managing strategy in GeckoDB/BOOLSTER, its design and its implementation. 
+For this paper, we focus on managing a far lower level: general parallel data processing. In particular, with this paper we provide insights into our thread managing strategy in \textsc{GeckoDB}/\textsc{Bolster}, its design and its implementation. 
 
-Parallel data processing can be achieved by different approaches, like instruction and data parallelism or multi threading. We focus on multi threading by implementing a thread pool for the graph database system GeckoDB\footnote{GeckoDB source code repository: \url{https://github.com/geckodb}}. The thread pool will be integrated into BOLSTER, a high performance library for parallel execution of primitives like for or filter on large data sets. BOLSTER has similarities to Intel TBB~\cite{books/daglib/0018624}, a C++ template library for parallel programming, but BOLSTER is written from scratch to perfectly fit into GeckoDBs specialized storage engine and vectorized query engine, both written in C11~\cite{pinneckegridtables}. 
+Parallel data processing can be achieved by different approaches, like instruction and data parallelism or multi threading. We focus on multi threading by implementing a thread pool for the graph database system \textsc{GeckoDB}\footnote{\textsc{GeckoDB} source code repository: \url{https://github.com/\textsc{GeckoDB}}}. The thread pool will be integrated into \textsc{Bolster}, a high performance library for parallel execution of primitives like for or filter on large data sets. \textsc{Bolster} has similarities to Intel \textsc{Tbb}~\cite{books/daglib/0018624}, a \textsc{C++} template library for parallel programming, but \textsc{Bolster} is written from scratch to perfectly fit into \textsc{GeckoDB}s specialized storage engine and vectorized query engine, both written in C11~\cite{pinneckegridtables}. 
 
-In the current implementation, BOLSTER creates a fix number of threads for each call of a primitive. This approach is called \emph{thread-per-request}. Since many primitives are executed at the same time, a couple of drawbacks arise from this implementation.
+In the current implementation, \textsc{Bolster} creates a fix number of threads for each call of a primitive. This approach is called \emph{thread-per-request}. Since many primitives are executed at the same time, a couple of drawbacks arise from this implementation.
 First of all, the creation of threads comes along with overhead like stack initialization and memory allocation. Secondly, creating a huge number of threads simultaneously may lead to large context switch overhead of the scheduler. Additionally, debugging and profiling applications that create many threads during runtime is time consuming.
 
-To overcome these drawbacks, we integrate an optimized thread pool in BOLSTER. Along with the implementation, we measure the performance of the primitives to determine the thread pool overhead. Additionally, we measure metrics like \emph{waiting and busy time} of threads to evaluate correct thread pool sizes for the considered use cases. 
+To overcome these drawbacks, we integrate an optimized thread pool in \textsc{Bolster}. Along with the implementation, we measure the performance of the primitives to determine the thread pool overhead. Additionally, we measure metrics like \emph{waiting and busy time} of threads to evaluate correct thread pool sizes for the considered use cases. 
 
 In this work we make the following contributions:
 \begin{itemize}
 	\item \textbf{Design and Implementation} We describe our design and implementation of the thread pool
 	\item \textbf{Waiting Strategies} We evaluate the possibility to wait for a group of task in the calling thread
-	\item \textbf{Evaluation} We compare our thread pool against the existing implementation in BOLSTER
+	\item \textbf{Evaluation} We compare our thread pool against the existing implementation in \textsc{Bolster}
 	\item \textbf{Statistics per Configuration} We measure and evaluate additional statistics for different thread pool configurations
 \end{itemize}
 We organized the rest of the paper as follows. In Section \ref{sec:pre}, we give preliminaries about the considered task configuration and about thread safe access of memory. In Section III, we show our design and implementation of the thread pool and examine our experimental environment in Section IV. In Section \ref{sec:eval}, we describe the results of our performance evaluation. In Section \ref{sec:related}, we name related work and state our conclusion and future work in Section \ref{sec:future}.
@@ -154,7 +155,7 @@ Each assigned task contains a function pointer to a routine and a pointer to dat
 
 With an increasing number of threads interactions with the queue could bottleneck the task throughput. An alternative lock free priority queue \cite{it:2018-003} based on a skip list is considered to improve on this.
 \subsection{Processing Tasks}
-Processing tasks in a thread pool is a balancing act between generalization the of tasks and the performance of their execution. With higher generalization, the implementation can be used for more use cases, but the execution performance may decrease. Therefore, we provide a set of functions to process task in the thread pool to match different requirements of BOLSTER. In Table 1, we show the functions provided by our thread pool to process tasks. One of the requirements of BOLSTER is waiting until a set of tasks is finished. To achieve at least the same performance as the baseline implementation reaches, we let the main thread first participate in the execution of the tasks and then wait until all tasks with the same handle are finished.
+Processing tasks in a thread pool is a balancing act between generalization the of tasks and the performance of their execution. With higher generalization, the implementation can be used for more use cases, but the execution performance may decrease. Therefore, we provide a set of functions to process task in the thread pool to match different requirements of \textsc{Bolster}. In Table 1, we show the functions provided by our thread pool to process tasks. One of the requirements of \textsc{Bolster} is waiting until a set of tasks is finished. To achieve at least the same performance as the baseline implementation reaches, we let the main thread first participate in the execution of the tasks and then wait until all tasks with the same handle are finished.
 
 To show the processing of tasks, we consider the function \emph{thread\_pool\_enqueue\_tasks\_wait}. In Figure 2, we show the flow of task enqueueing and execution in the thread pool system using this function. In the first step, tasks are passed as a parameter to the enqueue function provided by the thread pool. The tasks have to be created before passing and later on freed after processing by the calling function.  We provide different functions to enqueue a single task or an array of tasks.
 
@@ -182,7 +183,7 @@ Since $openTaskCount$ has to be altered from different threads the required decr
 \end{figure}
 
 \subsection{Managing Thread States}
-As mentioned before, accessing the same memory location from different threads may lead to race conditions, which means the program behavior depends on the accessing order of the threads. For example, while one thread updates data at a specific memory location, another thread writes into the data, which results to inconsistency. In Section \ref{sec:pre}, we presented two approaches to handle multithreaded access to the same memory location, mutex threads and atomic operations and we state where those approaches are used in our implementation. In this subsection, we focus on atomic operations to manage thread states. We consider the following steps for a thread to update its state. At first, the current state has to be checked and, depending on the current state, it has to be updated. If these steps are implemented using an if statement and an update function, the complete procedure is not atomic. Consequently, another thread can update the state between check of the current state and update. To avoid this, we use the function \emph{atomic\_compare\_exchange\_strong} \cite{atomicstrong} of the stdatomic library. This function combines the check and update in one atomic procedure. We implemented every thread state access with this function to ensure atomic thread state updates. 
+As mentioned before, accessing the same memory location from different threads may lead to race conditions, which means the program behavior depends on the accessing order of the threads. For example, while one thread updates data at a specific memory location, another thread writes into the data, which results to inconsistency. In Section \ref{sec:pre}, we presented two approaches to handle multithreaded access to the same memory location, mutex threads and atomic operations and we state where those approaches are used in our implementation. In this subsection, we focus on atomic operations to manage thread states. We consider the following steps for a thread to update its state. At first, the current state has to be checked and, depending on the current state, it has to be updated. If these steps are implemented using an if statement and an update function, the complete procedure is not atomic. Consequently, another thread can update the state between check of the current state and update. To avoid this, we use the function \emph{atomic\_compare\_exchange\_strong} \cite{atomicstrong} of the \texttt{stdatomic} library. This function combines the check and update in one atomic procedure. We implemented every thread state access with this function to ensure atomic thread state updates. 
 
 \begin{figure}
 	\begin{lstlisting}[style=CStyle,numbers=none]
@@ -267,19 +268,19 @@ To consider the thread pool instance, an important metric is the average waiting
 \end{table}
 
 \subsection{Testing and Memory Check}
-As last aspect of our implementation, we show how we test the thread pool and how we ensure to avoid memory leaks. Since GeckoDB already uses GTest \cite{sen2010quick} for unit testing, we also wrote our test using this framework. GTest provides a simple, powerful library to perform unit tests in C++. We wrote unit tests for the priority queue, the thread pool itself and the performance monitoring. As mentioned before, we use functions from the stdatomic library of C. Using this library in GTest results in compiler errors with GCC, since the C atomic implementation differs from the C++ one of the standard library and the GCC developers will not fix this issue. Consequently, we wrote a workaround not using the C stdatomic library in the GTest compilation unit.
+As last aspect of our implementation, we show how we test the thread pool and how we ensure to avoid memory leaks. Since \textsc{GeckoDB} already uses \textsc{GTest} \cite{sen2010quick} for unit testing, we also wrote our test using this framework. \textsc{GTest} provides a simple, powerful library to perform unit tests in \textsc{C++}. We wrote unit tests for the priority queue, the thread pool itself and the performance monitoring. As mentioned before, we use functions from the \texttt{stdatomic} library of C. Using this library in \textsc{GTest} results in compiler errors with \textsc{Gcc}, since the C atomic implementation differs from the \textsc{C++} one of the standard library and the \textsc{Gcc} developers will not fix this issue. Consequently, we wrote a workaround not using the C \texttt{stdatomic} library in the \textsc{GTest} compilation unit.
 
-Since C as low level language does not have an own memory management, memory leaks may occur using heap space allocations. To find and remove all memory leaks in our implementation, we use the tool \emph{valgrind}, which offers different functionalities to find race and jump condition and to count unfreed heap blocks. We found memory leaks in our priority queue tests and also in the deallocation of thread pool instances. In the following sections, we show our experimental setup and the results of our evaluation.
+Since C as low level language does not have an own automatic memory management, memory leaks may occur using heap space allocations. To find and remove all memory leaks in our implementation, we use the tool \textsc{Valgrind}, which offers different functionalities to find race and jump condition and to count unfreed heap blocks. We found memory leaks in our priority queue tests and also in the deallocation of thread pool instances. In the following sections, we show our experimental setup and the results of our evaluation.
 
 \section{Experimental Environment}
 In this section, we present our experimental environment focusing on the design of our benchmarks and the system configuration we used to evaluate our thread pool implementation.
 
 \subsection{Evaluation Setup}
-In our evaluation setup, we focus primarily on the comparison of our thread pool against the baseline implementation in BOLSTER, that creates new threads at runtime for each request. We simulate calls of BOLSTER primitives with different thread pool and task configurations and compare the results against the baseline.
+In our evaluation setup, we focus primarily on the comparison of our thread pool against the baseline implementation in \textsc{Bolster}, that creates new threads at runtime for each request. We simulate calls of \textsc{Bolster} primitives with different thread pool and task configurations and compare the results against the baseline.
 
-Additionally, we evaluate the metrics for threads, tasks and the thread pool mentioned in Section \ref{subsec:monitor} regarding the thread pool and task configuration used in the BOLSTER primitives. To evaluate optimal configurations for the thread pool, we consider the relation between waiting and completion time of thread pool instances with different sizes.
+Additionally, we evaluate the metrics for threads, tasks and the thread pool mentioned in Section \ref{subsec:monitor} regarding the thread pool and task configuration used in the \textsc{Bolster} primitives. To evaluate optimal configurations for the thread pool, we consider the relation between waiting and completion time of thread pool instances with different sizes.
 
-%Furthermore, we compare the scope and usage of our thread pool against an existing implementation \emph{Threading Building Blocks (Intel TBB)} \cite{kim2011multicore} written in C++. Since Intel TBB uses completely different approaches to parallel the execution of tasks, a direct performance comparison may not lead to reliable results. Therefore, we evaluate the usage and the scope both implementations give.
+%Furthermore, we compare the scope and usage of our thread pool against an existing implementation \emph{Threading Building Blocks (Intel TBB)} \cite{kim2011multicore} written in \textsc{C++}. Since Intel TBB uses completely different approaches to parallel the execution of tasks, a direct performance comparison may not lead to reliable results. Therefore, we evaluate the usage and the scope both implementations give.
 
 \subsection{Experimental Configuration}
 %\textbf{TODO: Change!}\\The operating system is Ubuntu 17.04 with linux kernel
@@ -289,12 +290,12 @@ Additionally, we evaluate the metrics for threads, tasks and the thread pool men
 %256KB L1 cache, 1MB L2 cache, and 6MB L3 cache. All benchmarks have been
 %repeated three times and a median value of all repetitions is being used for evaluation.
 
-For testing purposes we used primarily Linux setups, for one Ubuntu 17.04
-(linux 4.13) in a virtual machine environment, second Arch Linux (linux
+For testing purposes we used primarily \textsc{Linux} setups, for one \textsc{Ubuntu} 17.04
+(\textsc{Linux} 4.13) in a virtual machine environment, second \textsc{Arch Linux} (\textsc{Linux}
 4.17.3-1) running native, both updated on stable branch. Tests have also been
-conducted on Windows 10 and macOS High Sierra machines.
+conducted on \textsc{Windows 10} and \textsc{macOS High Sierra} machines.
 
-In our setups Sky- and Kabylake as well as Ryzen processors have been used with memory
+In our setups \textsc{Skylake} and \textsc{Kabylake} as well as \textsc{Ryzen} processors have been used with memory
 ranging from 8 to 24 GB of both DDR3-SODIMM and DDR4-SODIMM. 
 All benchmarks have been repeated three times and a median value of all
 repetitions are being used for evaluation.
@@ -307,7 +308,7 @@ Before presenting our evaluation results, we
 give some preliminaries about the validity of our results. At first, all
 measurements are executed on all machines we listed in our experimental
 configuration, but in this work we present only the results measured on
-Arch Linux with kernel 4.17.3-1 and 24 GB DDR4-SODIMM. We decided to use this
+\textsc{Arch} \textsc{Linux} with kernel 4.17.3-1 and 24 GB DDR4-SODIMM. We decided to use this
 system, since it is running a current kernel version and not in a virtual
 environment. Additionally, we use gnuplot to generate diagrams from our results,
 consequently, using a windows machine is not optimal.
@@ -320,9 +321,9 @@ Thirdly, measuring multi threading performance highly depends on the current wor
 As most important aspect of our evaluation, we compare our thread pool against an approximated version of the baseline implementation. To justify the performance comparison results, we present the different benchmark implementations in detail before we show the evaluation results.
 
 \subsubsection{Benchmark Implementation}
-Since BOLSTER is deeply integrated into GeckoDB and the workload and usage of multi threading depends on the graph data in the system, we can not directly use the BOLSTER implementation for our evaluation. Thus, we extracted the respecting code parts into an own implementation and use this for a direct comparison against one that uses our thread pool. 
+Since \textsc{Bolster} is deeply integrated into \textsc{GeckoDB} and the workload and usage of multi threading depends on the graph data in the system, we can not directly use the \textsc{Bolster} implementation for our evaluation. Thus, we extracted the respecting code parts into an own implementation and use this for a direct comparison against one that uses our thread pool. 
 
-In Figure \ref{fig4}, we show the approximated version of the BOLSTER multi threading code that we use as baseline implementation. In our benchmark. the method \emph{cmp\_baseline} is called multiple times with a different \emph{numThreads} parameter. Within each call, \emph{numThreads} threads are created and all of these execute the benchmark method \emph{work\_large}, that calculates a huge amount of exponential values in a loop. After the calling thread takes part in execution, it waits until all created threads are joined. The elapsed processing time is measured from the begin of the method until the join of all threads finished.
+In Figure \ref{fig4}, we show the approximated version of the \textsc{Bolster} multi threading code that we use as baseline implementation. In our benchmark. the method \emph{cmp\_baseline} is called multiple times with a different \emph{numThreads} parameter. Within each call, \emph{numThreads} threads are created and all of these execute the benchmark method \emph{work\_large}, that calculates a huge amount of exponential values in a loop. After the calling thread takes part in execution, it waits until all created threads are joined. The elapsed processing time is measured from the begin of the method until the join of all threads finished.
 
 \begin{figure}
 	\begin{lstlisting}[style=CStyle,numbers=none]
@@ -354,7 +355,7 @@ In Figure \ref{fig4}, we show the approximated version of the BOLSTER multi thre
 				__get_time_diff(&begin, &end);
 		}
 	\end{lstlisting}
-	\caption{Baseline multi threading implementation extracted from BOLSTER}
+	\caption{Baseline multi threading implementation extracted from \textsc{Bolster}}
 	\label{fig4}
 \end{figure}
 
@@ -446,9 +447,9 @@ In Figure \ref{fig9}, we show that the lock-free priority queue performs better.
 \end{figure}
 
 \subsection{Summary}
-As last step of the evaluation, we summarize our results and compare them to the requirements of GeckoDB. As mentioned before, our implementation reaches better performance than the baseline regarding our specific tests. Consequently, we solved the task for implementing and integrating the thread pool into BOLSTER to reach at least the baseline performance. Additionally, using our thread pool implementation solves the problem, that debugging and profiling with a huge number of threads is not possible. 
+As last step of the evaluation, we summarize our results and compare them to the requirements of \textsc{GeckoDB}. As mentioned before, our implementation reaches better performance than the baseline regarding our specific tests. Consequently, we solved the task for implementing and integrating the thread pool into \textsc{Bolster} to reach at least the baseline performance. Additionally, using our thread pool implementation solves the problem, that debugging and profiling with a huge number of threads is not possible. 
 
-Although a small and constant waiting time was not a requirement for integration into GeckoDB, we ensure that assigning many tasks works fast for different thread pool sizes. Regarding the performance and also the design requirements of GeckoDB and BOLSTER, we fulfil these requirements and successfully implemented and evaluated our thread pool implementation.
+Although a small and constant waiting time was not a requirement for integration into \textsc{GeckoDB}, we ensure that assigning many tasks works fast for different thread pool sizes. Regarding the performance and also the design requirements of \textsc{GeckoDB} and \textsc{Bolster}, we fulfil these requirements and successfully implemented and evaluated our thread pool implementation.
 
 The choice of a different priority queue data structure presents an opportunity for further optimizations, in particular to scale well with large amounts of threads.
 
@@ -466,11 +467,13 @@ In this work, we describe our implementation of a thread pool system. We present
 
 As presented in the evaluation, our thread pool implementation reaches better execution performance than the baseline because of avoiding the creation of short living threads for each request. We measured the average time threads spent waiting in different thread pool sizes and present, that even for a size of $32$ threads, the waiting time stays constantly small. Consequently, we conclude that using \emph{first come first serve} as scheduling approach leads to small waiting times and high execution performance. 
 
-To sum up, our thread pool implementation fulfils all performance and design requirements of GeckoDB and BOLSTER and reaches even faster execution time than the existing implementation. In the future, we plan to make the following adaptations to our thread pool system. Firstly, we want to reduce the number of dynamic allocation, since heap allocations mostly are slower than stack allocations. Secondly, we want to examine the usage of existing priority queue implementations for our thread pool system. Thirdly, we plan to integrate a dynamic resizing function based on the collected statistics of the performance monitoring component. 
+To sum up, our thread pool implementation fulfils all performance and design requirements of \textsc{GeckoDB} and \textsc{Bolster} and reaches even faster execution time than the existing implementation. In the future, we plan to make the following adaptations to our thread pool system. Firstly, we want to reduce the number of dynamic allocation, since heap allocations mostly are slower than stack allocations. Secondly, we want to examine the usage of existing priority queue implementations for our thread pool system. Thirdly, we plan to integrate a dynamic resizing function based on the collected statistics of the performance monitoring component. 
 
 
 \section{Acknowledgements}
 This work was partially funded by the DFG (grant no.: SA 465/50-1). Also we would like to thank Sebastian Bre\ss, Thomas Leich, David Broneske, and Gabriel Campero Durand.
+
+
 
 
 \bibliographystyle{splncs}
