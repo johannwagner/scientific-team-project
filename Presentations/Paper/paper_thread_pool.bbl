@@ -1,20 +1,33 @@
 \begin{thebibliography}{1}
 
+\bibitem{books/daglib/0018624}
+Reinders, J.:
+\newblock {Intel Threading Building Blocks - Outfitting C++ for Multi-Core
+  Processor Parallelism.}
+\newblock O'Reilly (2007)
+
+\bibitem{pinneckegridtables}
+Pinnecke, M., Campero~Durand, G., Broneske, D., Zoun, R., Saake, G.:
+\newblock {GridTables: A One-Size-Fits-Most Data Store Architecture for
+  GPU-Powered HTAP Databases}.
+\newblock submitted for publication (2018)
+
 \bibitem{xu2004performance}
 Xu, D., Bode, B.:
-\newblock Performance study and dynamic optimization design for thread pool
-  systems.
-\newblock PhD thesis, Citeseer (2004)
+\newblock {Performance Study and Dynamic Optimization Design for Thread Pool
+  Systems}.
+\newblock PhD thesis, United States. Department of Energy. Office of Science
+  (2004)
 
 \bibitem{ling2000analysis}
 Ling, Y., Mullen, T., Lin, X.:
-\newblock Analysis of optimal thread pool size.
+\newblock {Analysis of optimal thread pool size}.
 \newblock ACM SIGOPS Operating Systems Review \textbf{34}(2) (2000)  pp. 42--55
 
 \bibitem{it:2018-003}
 Lind{\'e}n, J., Jonsson, B.:
-\newblock A skiplist-based concurrent priority queue with minimal memory
-  contention.
+\newblock {A Skiplist-Based Concurrent Priority Queue with Minimal Memory
+  Contention}.
 \newblock Technical Report 2018-003, Department of Information Technology,
   Uppsala University (February 2018) Revised and corrected version of Technical
   Report 2013-025.
@@ -27,17 +40,18 @@ cppreference.com:
 
 \bibitem{sen2010quick}
 Sen, A.:
-\newblock A quick introduction to the google c++ testing framework.
+\newblock {A Quick Introduction to the Google C++ Testing Framework}.
 \newblock IBM DeveloperWorks (2010)  p. 20
 
 \bibitem{pyarali2001evaluating}
 Pyarali, I., Spivak, M., Cytron, R., Schmidt, D.C.:
-\newblock Evaluating and optimizing thread pool strategies for real-time corba.
+\newblock {Evaluating and Optimizing Thread Pool Strategies for Real-Time
+  CORBA}.
 \newblock ACM SIGPLAN Notices \textbf{36}(8) (2001)  pp. 214--222
 
 \bibitem{schmidt1998evaluating}
 Schmidt, D.C.:
-\newblock Evaluating architectures for multithreaded object request brokers.
+\newblock {Evaluating architectures for multithreaded object request brokers}.
 \newblock Communications of the ACM \textbf{41}(10) (1998)  pp. 54--60
 
 \end{thebibliography}
