@@ -1,4 +1,71 @@
-\begin{thebibliography}{1}
+\begin{thebibliography}{10}
+
+\bibitem{Alonso:2013:HKS:2510649.2511162}
+Alonso, G.:
+\newblock {Hardware Killed the Software Star}.
+\newblock In: Proceedings of the 2013 IEEE International Conference on Data
+  Engineering (ICDE 2013). ICDE '13, Washington, DC, USA, IEEE Computer Society
+  (2013)  1--4
+
+\bibitem{DBLP:series/synthesis/2017Ailamaki}
+Ailamaki, A., Liarou, E., T{\"{o}}z{\"{u}}n, P., Porobic, D., Psaroudakis, I.:
+\newblock {Databases on Modern Hardware: How to Stop Underutilization and Love
+  Multicores}.
+\newblock Synthesis Lectures on Data Management. Morgan {\&} Claypool
+  Publishers (2017)
+
+\bibitem{10.1007/978-3-319-72413-3_8}
+Sridhar, K.T.:
+\newblock {Modern Column Stores for Big Data Processing}.
+\newblock In Reddy, P.K., Sureka, A., Chakravarthy, S., Bhalla, S., eds.: Big
+  Data Analytics, Cham, Springer International Publishing (2017)  113--125
+
+\bibitem{10.5120/ijca2016912260}
+Hamdi, M., Xiong, W., Yu, F., Alswedani, S., Hou, W.C.:
+\newblock {An Aggressive Concurrency Control Protocol for Main Memory
+  Databases}.
+\newblock International Journal of Computer Applications \textbf{155}(2) (Dec
+  2016)  7--13
+
+\bibitem{agrawal2017many}
+Agrawal, S.R., Idicula, S., Raghavan, A., Vlachos, E., Govindaraju, V.,
+  Varadarajan, V., Balkesen, C., Giannikis, G., Roth, C., Agarwal, N.,  et~al.:
+\newblock {A Many-Core Architecture for In-Memory Data Processing}.
+\newblock In: Proceedings of the 50th Annual IEEE/ACM International Symposium
+  on Microarchitecture, ACM (2017)  245--258
+
+\bibitem{Makreshanski2017}
+Makreshanski, D., Giannikis, G., Alonso, G., Kossmann, D.:
+\newblock {Many-Query Join: Efficient Shared Execution of Relational Joins on
+  Modern Hardware}.
+\newblock The VLDB Journal (Aug 2017)
+
+\bibitem{schuh2016experimental}
+Schuh, S., Chen, X., Dittrich, J.:
+\newblock {An Experimental Comparison of Thirteen Relational Equi-Joins in Main
+  Memory}.
+\newblock In: Proceedings of the 2016 International Conference on Management of
+  Data, ACM (2016)  1961--1976
+
+\bibitem{psaroudakis2016adaptive}
+Psaroudakis, I., Scheuer, T., May, N., Sellami, A., Ailamaki, A.:
+\newblock {Adaptive NUMA-aware Data Placement and Task Scheduling for
+  Analytical Workloads in Main-Memory Column-Stores}.
+\newblock Proceedings of the VLDB Endowment \textbf{10}(2) (2016)  37--48
+
+\bibitem{psaroudakis2013task}
+Psaroudakis, I., Scheuer, T., May, N., Ailamaki, A.:
+\newblock {Task Scheduling for Highly Concurrent Analytical and Transactional
+  Main-Memory Workloads}.
+\newblock In: Proceedings of the Fourth International Workshop on Accelerating
+  Data Management Systems Using Modern Processor and Storage Architectures
+  (ADMS 2013). Number EPFL-CONF-188280 (2013)
+
+\bibitem{wu2017empirical}
+Wu, Y., Arulraj, J., Lin, J., Xian, R., Pavlo, A.:
+\newblock {An Empirical Evaluation of In-Memory Multi-Version Concurrency
+  Control}.
+\newblock Proceedings of the VLDB Endowment \textbf{10}(7) (2017)  781--792
 
 \bibitem{books/daglib/0018624}
 Reinders, J.:

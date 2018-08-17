@@ -9,6 +9,126 @@
   publisher={ACM}
 }
 
+@article{wu2017empirical,
+  title={{An Empirical Evaluation of In-Memory Multi-Version Concurrency Control}},
+  author={Wu, Yingjun and Arulraj, Joy and Lin, Jiexi and Xian, Ran and Pavlo, Andrew},
+  journal={Proceedings of the VLDB Endowment},
+  volume={10},
+  number={7},
+  pages={781--792},
+  year={2017},
+  publisher={VLDB Endowment}
+}
+
+@inproceedings{psaroudakis2013task,
+  title={{Task Scheduling for Highly Concurrent Analytical and Transactional Main-Memory Workloads}},
+  author={Psaroudakis, Iraklis and Scheuer, Tobias and May, Norman and Ailamaki, Anastasia},
+  booktitle={Proceedings of the Fourth International Workshop on Accelerating Data Management Systems Using Modern Processor and Storage Architectures (ADMS 2013)},
+  number={EPFL-CONF-188280},
+  year={2013}
+}
+
+@article{psaroudakis2016adaptive,
+  title={{Adaptive NUMA-aware Data Placement and Task Scheduling for Analytical Workloads in Main-Memory Column-Stores}},
+  author={Psaroudakis, Iraklis and Scheuer, Tobias and May, Norman and Sellami, Abdelkader and Ailamaki, Anastasia},
+  journal={Proceedings of the VLDB Endowment},
+  volume={10},
+  number={2},
+  pages={37--48},
+  year={2016},
+  publisher={VLDB Endowment}
+}
+
+@inproceedings{schuh2016experimental,
+  title={{An Experimental Comparison of Thirteen Relational Equi-Joins in Main Memory}},
+  author={Schuh, Stefan and Chen, Xiao and Dittrich, Jens},
+  booktitle={Proceedings of the 2016 International Conference on Management of Data},
+  pages={1961--1976},
+  year={2016},
+  organization={ACM}
+}
+
+@Article{Makreshanski2017,
+author="Makreshanski, Darko
+and Giannikis, Georgios
+and Alonso, Gustavo
+and Kossmann, Donald",
+title={{Many-Query Join: Efficient Shared Execution of Relational Joins on Modern Hardware}},
+journal="The VLDB Journal",
+year="2017",
+month="Aug",
+day="30",
+abstract="Database architectures typically process queries one at a time, executing concurrent queries in independent execution contexts. Often, such a design leads to unpredictable performance and poor scalability. One approach to circumvent the problem is to take advantage of sharing opportunities across concurrently running queries. In this paper, we propose many-query join (MQJoin), a novel method for sharing the execution of a join that can efficiently deal with hundreds of concurrent queries. This is achieved by minimizing redundant work and making efficient use of main-memory bandwidth and multi-core architectures. Compared to existing proposals, MQJoin is able to efficiently handle larger workloads regardless of the schema by exploiting more sharing opportunities. We also compared MQJoin to two commercial main-memory column-store databases. For a TPC-H-based workload, we show that MQJoin provides 2--5                                                                  {\$}{\$}{\backslash}times {\$}{\$}                                                      {\texttimes}                                                 higher throughput with significantly more stable response times.",
+issn="0949-877X",
+doi="10.1007/s00778-017-0475-4",
+url="https://doi.org/10.1007/s00778-017-0475-4"
+}
+
+
+
+@inproceedings{agrawal2017many,
+  title={{A Many-Core Architecture for In-Memory Data Processing}},
+  author={Agrawal, Sandeep R and Idicula, Sam and Raghavan, Arun and Vlachos, Evangelos and Govindaraju, Venkatraman and Varadarajan, Venkatanathan and Balkesen, Cagri and Giannikis, Georgios and Roth, Charlie and Agarwal, Nipun and others},
+  booktitle={Proceedings of the 50th Annual IEEE/ACM International Symposium on Microarchitecture},
+  pages={245--258},
+  year={2017},
+  organization={ACM}
+}
+
+@article{10.5120/ijca2016912260,
+  author = {Mohammed Hamdi and Weidong Xiong and Feng Yu and Sarah Alswedani and Wen-Chi Hou},
+  title = {{An Aggressive Concurrency Control Protocol for Main Memory Databases}},
+  journal = {International Journal of Computer Applications},
+  issue_date = {December 2016},
+  volume = {155},
+  number = {2},
+  month = {Dec},
+  year = {2016},
+  issn = {0975-8887},
+  pages = {7-13},
+  numpages = {7},
+  url = {http://www.ijcaonline.org/archives/volume155/number2/26575-2016912260},
+  doi = {10.5120/ijca2016912260},
+  publisher = {Foundation of Computer Science (FCS), NY, USA},
+  address = {New York, USA}
+}
+
+@InProceedings{10.1007/978-3-319-72413-3_8,
+author="Sridhar, K. T.",
+editor="Reddy, P. Krishna
+and Sureka, Ashish
+and Chakravarthy, Sharma
+and Bhalla, Subhash",
+title={{Modern Column Stores for Big Data Processing}},
+booktitle="Big Data Analytics",
+year="2017",
+publisher="Springer International Publishing",
+address="Cham",
+pages="113--125",
+abstract="The advent of MapReduce/Hadoop and NoSQL databases undermined the primacy of SQL relational databases for data processing. Pioneering work by researchers on MonetDB and C-Store opened up the world of column stores that retain the SQL model but use different store and engine for performance gains. The emergence of pay-by-use clouds and MPP versions of column stores on cloud eliminated scale-out issues of row stores. Data mining researchers have also shown that SQL on parallel, columnar database could be a candidate for Big Data analytics. In this survey written for a tutorial, we trace the technology evolution and history of the fall of row stores and rise of column stores, delving into architectural details of column DBs from academia and industry.",
+isbn="978-3-319-72413-3"
+}
+
+
+
+@book{DBLP:series/synthesis/2017Ailamaki,
+  author    = {Anastasia Ailamaki and
+               Erietta Liarou and
+               Pinar T{\"{o}}z{\"{u}}n and
+               Danica Porobic and
+               Iraklis Psaroudakis},
+  title     = {{Databases on Modern Hardware: How to Stop Underutilization and Love
+               Multicores}},
+  series    = {Synthesis Lectures on Data Management},
+  publisher = {Morgan {\&} Claypool Publishers},
+  year      = {2017},
+  url       = {https://doi.org/10.2200/S00774ED1V01Y201704DTM045},
+  doi       = {10.2200/S00774ED1V01Y201704DTM045},
+  timestamp = {Mon, 11 Sep 2017 01:00:00 +0200},
+  biburl    = {https://dblp.org/rec/bib/series/synthesis/2017Ailamaki},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
+}
+
 @book{books/daglib/0018624,
   author = {Reinders, James},
   isbn = {978-0-596-51480-8},
@@ -18,6 +138,22 @@
   timestamp = {2011-04-29T15:26:09.000+0200},
   title = {{Intel Threading Building Blocks - Outfitting C++ for Multi-Core Processor Parallelism.}},
   year = 2007
+}
+
+@inproceedings{Alonso:2013:HKS:2510649.2511162,
+ author = {Alonso, Gustavo},
+ title = {{Hardware Killed the Software Star}},
+ booktitle = {Proceedings of the 2013 IEEE International Conference on Data Engineering (ICDE 2013)},
+ series = {ICDE '13},
+ year = {2013},
+ isbn = {978-1-4673-4909-3},
+ pages = {1--4},
+ numpages = {4},
+ url = {http://dx.doi.org/10.1109/ICDE.2013.6544807},
+ doi = {10.1109/ICDE.2013.6544807},
+ acmid = {2511162},
+ publisher = {IEEE Computer Society},
+ address = {Washington, DC, USA},
 }
 
 
