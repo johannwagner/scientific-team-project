@@ -106,7 +106,7 @@ We organized the rest of the paper as follows. In Section \ref{sec:pre}, we give
 In this section, we define our configuration of tasks that are processed by the thread pool and state difficulties of synchronizing thread access to memory.
 
 \begin{figure*}[htbp]
-	\centering \includegraphics[width=0.7\textwidth]{img/pool_structure.png}
+	\centering \includegraphics[width=0.7\textwidth]{img/pool_structure.pdf}
 	\caption{Design of the thread pool system}
 	\label{fig0}
 \end{figure*}
@@ -162,7 +162,7 @@ To show the processing of tasks, we consider the function \emph{thread\_pool\_en
 In the next step, the tasks will be enqueued into the priority queue of the thread pool. Before enqueueing, the function \emph{thread\_pool\_enqueue\_tasks\_wait} creates a handle and links all tasks to it. After enqueueing the tasks to the priority queue, the waiting threads in the thread pool pop the enqueued tasks from the priority queue and execute the task routine. We decided to let threads look for new tasks instead of explicitly assigning to reduce the scheduling overhead. We call this approach \emph{first come first serve}. This happens asynchronously to the calling function and therefore is not considered as an own step of the process. The calling thread gets one of the passed tasks and processes it. After finishing the task, the calling thread waits until all other tasks referring to the created handle are finished and then returns to the calling function. In the next section, we show the waiting for tasks with handles in detail.
 
 \begin{figure}
-	\centering\includegraphics[width=0.4\textwidth]{img/pool_queue.png}
+	\centering\includegraphics[width=0.4\textwidth]{img/pool_queue.pdf}
 	\caption{Workflow of task enqueueing and execution in the thread pool}
 	\label{fig1}
 \end{figure}
