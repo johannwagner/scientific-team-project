@@ -1,5 +1,5 @@
-set terminal pngcairo nocrop enhanced size 700,400 font ",8"
-set output 'pool_avg.png'
+set terminal svg enhanced size 700,400 font ",8"
+set output 'pool_avg.svg'
 set title 'Idle and completion time(ns) with 10000 tasks' font ",15"
 set boxwidth 0.8 absolute
 set border 1
