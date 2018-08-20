@@ -1,5 +1,5 @@
-set terminal pngcairo nocrop enhanced size 700,400 font ",8"
-set output 'pool_baseline.png'
+set terminal svg enhanced size 700,400 font ",8"
+set output 'pool_baseline.svg'
 #set title 'Thread pool and baseline execution time (ns)' font ",15"
 set boxwidth 0.8 absolute
 set border 1
