@@ -21,6 +21,7 @@
 \definecolor{mGray}{rgb}{0.5,0.5,0.5}
 \definecolor{mPurple}{rgb}{0.58,0,0.82}
 \definecolor{backgroundColour}{rgb}{1,1,1}
+\definecolor{grayColor}{rgb}{0.56,0.56,0.56}
 
 
 \lstdefinestyle{CStyle}{
@@ -48,10 +49,10 @@
 \title{Thread Management for High Performance Database Systems - Design and Implementation \\{\large Technical Report}\\}
 
 \author{
-	\IEEEauthorblockN{Robert Jendersie, Johannes Wuensche, Johann Wagner, \\Marten Wallewein-Eising, Marcus Pinnecke, Gunter Saake}
+	\IEEEauthorblockN{Robert Jendersie{\footnotesize\color{grayColor}$^\text{1}$}, Johannes Wuensche{\footnotesize\color{grayColor}$^\text{2}$}, Johann Wagner{\footnotesize\color{grayColor}$^\text{1}$}, \\Marten Wallewein-Eising{\footnotesize\color{grayColor}$^\text{2}$}, Marcus Pinnecke{\footnotesize\color{grayColor}$^\text{1}$}, and Gunter Saake{\footnotesize\color{grayColor}$^\text{1}$}}
 	\IEEEauthorblockA{\textit{Database and Software Engineering Group, Otto-von-Guericke University} \\
 		Magdeburg, Germany \\
-		\emph{firstname}.\emph{lastname}@ovgu.de} \and
+		\emph{firstname}.\emph{lastname}@{\color{grayColor}(\footnotesize$^\text{1}$}ovgu {\color{grayColor}\footnotesize$\mid$ $^\text{2}$}st.ovgu{\color{grayColor})}.de}
 }
 
 \maketitle
@@ -86,7 +87,7 @@ The growing number of cores for both traditional CPUs as well as trending co-pro
 
 For this paper, we focus on managing a far lower level: general parallel data processing. In particular, with this paper we provide insights into our thread managing strategy in \textsc{GeckoDB}/\textsc{Bolster}, its design and its implementation. 
 
-Parallel data processing can be achieved by different approaches, like instruction and data parallelism or multi threading. We focus on multi threading by implementing a thread pool for the graph database system \textsc{GeckoDB}\footnote{\textsc{GeckoDB} source code repository: \url{https://github.com/\textsc{GeckoDB}}}. The thread pool will be integrated into \textsc{Bolster}, a high performance library for parallel execution of primitives like for or filter on large data sets. \textsc{Bolster} has similarities to Intel \textsc{Tbb}~\cite{books/daglib/0018624}, a \textsc{C++} template library for parallel programming, but \textsc{Bolster} is written from scratch to perfectly fit into \textsc{GeckoDB}s specialized storage engine and vectorized query engine, both written in C11~\cite{pinneckegridtables}. 
+Parallel data processing can be achieved by different approaches, like instruction and data parallelism or multi threading. We focus on multi threading by implementing a thread pool for the graph database system \textsc{GeckoDB}\footnote{\textsc{GeckoDB} source code repository: \url{https://github.com/geckodb}}. The thread pool will be integrated into \textsc{Bolster}, a high performance library for parallel execution of primitives like for or filter on large data sets. \textsc{Bolster} has similarities to Intel \textsc{Tbb}~\cite{books/daglib/0018624}, a \textsc{C++} template library for parallel programming, but \textsc{Bolster} is written from scratch to perfectly fit into \textsc{GeckoDB}s specialized storage engine and vectorized query engine, both written in C11~\cite{pinneckegridtables}. 
 
 In the current implementation, \textsc{Bolster} creates a fix number of threads for each call of a primitive. This approach is called \emph{thread-per-request}. Since many primitives are executed at the same time, a couple of drawbacks arise from this implementation.
 First of all, the creation of threads comes along with overhead like stack initialization and memory allocation. Secondly, creating a huge number of threads simultaneously may lead to large context switch overhead of the scheduler. Additionally, debugging and profiling applications that create many threads during runtime is time consuming.
@@ -177,7 +178,7 @@ To clarify the procedure of the waiting algorithm, we consider the second slot i
 Since $openTaskCount$ has to be altered from different threads the required decrements are ensured to be atomic. This is in opposition to the usual goal of slot-maps to improve cache locality. Atomics on x86 usually prevent their whole cache line from being used while they are changed. Thus a sparse distribution of slots should reduce collisions. To quantify this difference, the baseline implementation searches for free slots linearly from the beginning, while an alternative approach tries to distribute the slots over multiple cache lines. In Figure \ref{fig10}, we show implementations for both search approaches.
 
 \begin{figure}
-\centering	\includegraphics[width=0.25\textwidth]{img/waitingconcept.png}
+\centering	\includegraphics[width=0.25\textwidth]{img/waitingconcept.pdf}
 	\caption{Concept of waiting for tasks using a slot-map}
 	\label{fig2}
 \end{figure}
@@ -405,7 +406,7 @@ Firstly, compared to strict processing workload, create, and later on join threa
 Secondly, the task creation and enqueuing have only slight impact on the performance, since the baseline does not include these operations, but is still clearly slower than the thread pool implementation. 
 
 \begin{figure}
-	\includegraphics[width=0.5\textwidth]{img/pool_baseline.png}
+	\includegraphics[width=0.5\textwidth]{img/pool_baseline.pdf}
 	\caption{Time measures in nanoseconds of thread pool (blue) and baseline (orange) implementation with different numbers of threads.  }
 	\label{fig6}
 \end{figure}
@@ -422,7 +423,7 @@ To examine the waiting time behavior of larger thread pools, we use a similar im
 In Figure \ref{fig7}, we show the relation of waiting and completion time of different thread pool sizes. The waiting time is, compared to the completion time, very small and nearly constant for all considered thread pool sizes. From this observation, we draw the following conclusions for our \emph{first come first serve} scheduling approach. Firstly, constant average waiting time indicates only small performance decreases due to priority queue locking. Secondly, even for $32$ threads in one pool instance, the waiting time occupies only a small fraction of the completion time, which indicates good thread usage.  Thirdly, the execution performance increases along with the thread pool size, which shows that even for $32$ threads, parallelization leads to faster task execution. 
 
 \begin{figure}
-	\includegraphics[width=0.5\textwidth]{img/pool_avg.png}
+	\includegraphics[width=0.5\textwidth]{img/pool_avg.pdf}
 	\caption{Relation between waiting time (orange) and completion time (blue) of thread pools with different sizes processing 10000 tasks}
 	\label{fig7}
 \end{figure}
@@ -435,13 +436,13 @@ In Figure \ref{fig9}, we show that the lock-free priority queue performs better.
 
 
 \begin{figure}
-	\centering\includegraphics[width=0.4\textwidth]{img/slot_distr.png}
+	\centering\includegraphics[width=0.4\textwidth]{img/slot_distr.pdf}
 	\caption{Utilization \% with different slot distribution strategies}
 	\label{fig8}
 \end{figure}
 
 \begin{figure}
-	\centering\includegraphics[width=0.4\textwidth]{img/lock_free.png}
+	\centering\includegraphics[width=0.4\textwidth]{img/lock_free.pdf}
 	\caption{Comparison of Utilization \% of the lock-free queue versus mutex based heap}
 	\label{fig9}
 \end{figure}
